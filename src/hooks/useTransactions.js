@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
+import { db } from '../services/firebase'
 import {
     collection, addDoc, updateDoc, deleteDoc,
     doc, onSnapshot, query, orderBy
 } from 'firebase/firestore'
-import { db } from '../services/firebase'
 import { useAuth } from '../contexts/AuthContext'
 
 export function useTransactions() {

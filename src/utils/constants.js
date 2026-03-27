@@ -20,18 +20,6 @@ export const ACCOUNT_COLORS = [
     '#2a34ff', '#e4d019', '#e61476', '#c30000',
 ]
 
-export const BUSINESS_DAY_FALLBACK = [
-    { value: 'before', label: 'Antecipa pro dia útil anterior' },
-    { value: 'after', label: 'Posterga pro dia útil seguinte' },
-]
-
-export const DAY_RULE_TYPES = [
-    { value: 'fixed', label: 'Dia fixo do mês' },
-    { value: 'lastBusinessDay', label: 'Último dia útil' },
-    { value: 'nthBusinessDay', label: 'Enésimo dia útil' },
-    { value: 'nthWeekday', label: 'Enésimo dia da semana' },
-]
-
 export const CATEGORY_TYPES = [
   { value: 'expense', label: 'Despesa' },
   { value: 'income',  label: 'Receita' },
@@ -63,4 +51,26 @@ export const PAYMENT_METHODS = [
   { value: 'cash',            label: 'Dinheiro' },
   { value: 'pix',             label: 'Pix' },
   { value: 'transfer',        label: 'Transferência' },
+]
+
+export const DAY_RULE_TYPES = [
+  { value: 'fixed',           label: 'Dia fixo do mês' },
+  { value: 'lastBusinessDay', label: 'Último dia útil' },
+  { value: 'nthBusinessDay',  label: 'Enésimo dia útil' },
+  { value: 'nthWeekday',      label: 'Enésimo dia da semana' },
+]
+
+export const WEEKDAYS = [
+  { value: 0, label: 'Domingo' },
+  { value: 1, label: 'Segunda-feira' },
+  { value: 2, label: 'Terça-feira' },
+  { value: 3, label: 'Quarta-feira' },
+  { value: 4, label: 'Quinta-feira' },
+  { value: 5, label: 'Sexta-feira' },
+  { value: 6, label: 'Sábado' },
+]
+
+export const BUSINESS_DAY_FALLBACK = [
+  { value: 'before', label: 'Antecipa pro dia útil anterior' },
+  { value: 'after',  label: 'Posterga pro dia útil seguinte' },
 ]

@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useTransactions } from '../hooks/useTransactions'
+import Layout from '../components/Layout'
 import { useAccounts } from '../hooks/useAccounts'
 import { useCategories } from '../hooks/useCategories'
 import { TRANSACTION_STATUS } from '../utils/constants'
+import { useTransactions } from '../hooks/useTransactions'
 import TransactionForm from '../components/TransactionForm'
-import Layout from '../components/Layout'
 
 const STATUS_STYLES = {
     confirmed: 'bg-green-50 text-green-700',

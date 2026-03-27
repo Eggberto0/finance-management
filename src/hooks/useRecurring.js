@@ -6,45 +6,45 @@ import {
 } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
 
-export function useAccounts() {
+export function useRecurring() {
     const { user } = useAuth()
-    const [accounts, setAccounts] = useState([])
+    const [rules, setRules] = useState([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         if (!user) return
 
         const q = query(
-            collection(db, 'users', user.uid, 'accounts'),
+            collection(db, 'users', user.uid, 'recurringRules'),
             orderBy('createdAt', 'asc')
         )
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const unsubscribe = onSnapshot(q, snapshot => {
             const data = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }))
-            setAccounts(data)
+            setRules(data)
             setLoading(false)
         })
 
         return unsubscribe
     }, [user])
 
-    async function addAccount(data) {
-        await addDoc(collection(db, 'users', user.uid, 'accounts'), {
+    async function addRule(data) {
+        await addDoc(collection(db, 'users', user.uid, 'recurringRules'), {
             ...data,
             createdAt: new Date()
         })
     }
 
-    async function updateAccount(id, data) {
-        await updateDoc(doc(db, 'users', user.uid, 'accounts', id), data)
+    async function updateRule(id, data) {
+        await updateDoc(doc(db, 'users', user.uid, 'recurringRules', id), data)
     }
 
-    async function deleteAccount(id) {
-        await deleteDoc(doc(db, 'users', user.uid, 'accounts', id))
+    async function deleteRule(id) {
+        await deleteDoc(doc(db, 'users', user.uid, 'recurringRules', id))
     }
 
-    return { accounts, loading, addAccount, updateAccount, deleteAccount }
+    return { rules, loading, addRule, updateRule, deleteRule }
 }

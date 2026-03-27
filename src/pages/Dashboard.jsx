@@ -1,7 +1,9 @@
-import { useAuth } from '../contexts/AuthContext'
 import Layout from '../components/Layout'
+import { useAuth } from '../contexts/AuthContext'
+import { useGenerateInstances } from '../hooks/useGenerateInstances'
 
 export default function Dashboard() {
+  useGenerateInstances()
     const { user } = useAuth()
 
     return (

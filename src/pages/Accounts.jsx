@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useAccounts } from '../hooks/useAccounts'
-import { ACCOUNT_TYPES, CURRENCIES } from '../utils/constants'
-import AccountForm from '../components/AccountForm'
 import Layout from '../components/Layout'
-import { useTransactions } from '../hooks/useTransactions'
+import { useAccounts } from '../hooks/useAccounts'
+import AccountForm from '../components/AccountForm'
 import { calcAccountBalance } from '../utils/calcBalance'
+import { useTransactions } from '../hooks/useTransactions'
+import { ACCOUNT_TYPES, CURRENCIES } from '../utils/constants'
 
 function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, getCurrencyLabel }) {
     return (

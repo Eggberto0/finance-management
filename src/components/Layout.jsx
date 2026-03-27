@@ -6,6 +6,7 @@ const navItems = [
     { to: '/accounts', label: 'Contas' },
     { to: '/categories', label: 'Categorias' },
     { to: '/transactions', label: 'Lançamentos' },
+    { to: '/recurring', label: 'Recorrentes' },
 ]
 
 export default function Layout({ children }) {

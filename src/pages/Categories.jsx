@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useCategories } from '../hooks/useCategories'
+import Layout from '../components/Layout'
 import { CATEGORY_TYPES } from '../utils/constants'
 import CategoryForm from '../components/CategoryForm'
-import Layout from '../components/Layout'
+import { useCategories } from '../hooks/useCategories'
 
 export default function Categories() {
     const { categories, loading, addCategory, updateCategory, deleteCategory } = useCategories()
