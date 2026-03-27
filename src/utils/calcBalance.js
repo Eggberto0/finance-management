@@ -20,23 +20,28 @@ export function calcAccountBalance(account, transactions) {
 
         const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
         const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-        
+
         console.log(
             'date original:', t.date,
             'dateOnly:', dateOnly,
             'todayOnly:', todayOnly,
             'passa:', dateOnly <= todayOnly
         )
-        
+
         return dateOnly <= todayOnly
     })
 
     console.log('confirmed count:', confirmed.length)
 
     if (account.type === 'credit') {
-        const spent = confirmed
-            .filter(t => t.accountId === account.id && t.type === 'expense')
+        const spent = transactions
+            .filter(t =>
+                t.accountId === account.id &&
+                t.type === 'expense' &&
+                t.status !== 'cancelled'
+            )
             .reduce((sum, t) => sum + t.amount, 0)
+
         return (account.creditLimit ?? 0) - spent
     }
 

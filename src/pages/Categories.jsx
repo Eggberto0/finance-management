@@ -36,7 +36,7 @@ export default function Categories() {
 
     return (
         <Layout>
-            <div className="max-w-3xl mx-auto px-6 py-8">
+            <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800">Categorias</h2>
                     <button

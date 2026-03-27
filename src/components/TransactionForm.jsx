@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
+import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { calcInstallmentDates } from '../utils/creditCardDates'
 import { TRANSACTION_TYPES, TRANSACTION_STATUS, PAYMENT_METHODS } from '../utils/constants'
 
 export default function TransactionForm({ transaction, onClose, onAdd, onUpdate }) {
@@ -27,18 +29,32 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         paymentMethod: transaction?.paymentMethod ?? 'debit',
     })
 
+    useEffect(() => {
+        if (isCredit) {
+            setForm(prev => ({
+                ...prev,
+                paymentMethod: form.installments > 1 ? 'credit_install' : 'credit_single',
+                autoConfirm: true,
+            }))
+        }
+    }, [form.accountId])
+
+    const selectedAccount = accounts.find(a => a.id === form.accountId)
+    const isCredit = selectedAccount?.type === 'credit'
+
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
     }
+
+    const installments = parseInt(form.installments) || 1
+    const totalAmount = parseFloat(form.amount) || 0
+    const installmentAmount = installments > 1 ? totalAmount / installments : totalAmount
 
     async function handleSubmit() {
         if (!form.amount || !form.accountId) return
 
         const [year, month, day] = form.date.split('-').map(Number)
         const date = new Date(year, month - 1, day, 12, 0, 0)
-
-        console.log('form.date:', form.date)
-        console.log('date criada:', new Date(year, month - 1, day, 12, 0, 0))
 
         const tags = form.tags
             .split(',')
@@ -59,7 +75,14 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         }
 
         if (isEditing) {
-            await onUpdate(transaction.id, { ...base })
+            const todayDate = new Date()
+            todayDate.setHours(23, 59, 59, 999)
+            const dateOnly = new Date(year, month - 1, day)
+            const updatedStatus =
+                base.status === 'confirmed' && dateOnly > todayDate
+                    ? 'pending'
+                    : base.status
+            await onUpdate(transaction.id, { ...base, status: updatedStatus })
             onClose()
             return
         }
@@ -70,16 +93,32 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             return
         }
 
-        const installments = parseInt(form.installments) || 1
-
         if (installments > 1) {
             const installmentId = crypto.randomUUID()
+            const amountPerInstallment = parseFloat((totalAmount / installments).toFixed(2))
+
+            let installmentDates
+            if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
+                const [year, month, day] = form.date.split('-').map(Number)
+                const purchaseDate = new Date(year, month - 1, day)
+                installmentDates = calcInstallmentDates(
+                    purchaseDate,
+                    selectedAccount.closingDay,
+                    selectedAccount.dueDay,
+                    installments
+                )
+            }
+
             for (let i = 0; i < installments; i++) {
-                const installmentDate = new Date(date)
-                installmentDate.setMonth(installmentDate.getMonth() + i)
+                const installmentDate = installmentDates
+                    ? installmentDates[i]
+                    : new Date(year, month - 1 + i, day, 12, 0, 0)
+
                 await onAdd({
                     ...base,
+                    amount: amountPerInstallment,
                     date: installmentDate,
+                    purchaseDate: date,
                     installmentId,
                     installmentNumber: i + 1,
                     installmentTotal: installments,
@@ -87,7 +126,19 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                 })
             }
         } else {
-            await onAdd(base)
+            if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
+                const [year, month, day] = form.date.split('-').map(Number)
+                const purchaseDate = new Date(year, month - 1, day)
+                const dueDates = calcInstallmentDates(
+                    purchaseDate,
+                    selectedAccount.closingDay,
+                    selectedAccount.dueDay,
+                    1
+                )
+                await onAdd({ ...base, date: dueDates[0], purchaseDate: date })
+            } else {
+                await onAdd(base)
+            }
         }
 
         onClose()
@@ -126,14 +177,41 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Valor</label>
-                            <input
-                                type="number"
-                                placeholder="0,00"
+                            <label className="text-xs text-gray-500">
+                                {installments > 1 ? 'Valor total' : 'Valor'}
+                            </label>
+                            <NumericFormat
                                 value={form.amount}
-                                onChange={e => handleChange('amount', e.target.value)}
+                                onValueChange={values => handleChange('amount', values.floatValue ?? '')}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                prefix="R$ "
+                                decimalScale={2}
+                                fixedDecimalScale
+                                placeholder="R$ 0,00"
                                 className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
                             />
+                            {installments > 1 && totalAmount > 0 && (
+                                <p className="text-xs text-gray-400">
+                                    {isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay
+                                        ? (() => {
+                                            const [year, month, day] = form.date.split('-').map(Number)
+                                            const dates = calcInstallmentDates(
+                                                new Date(year, month - 1, day),
+                                                selectedAccount.closingDay,
+                                                selectedAccount.dueDay,
+                                                installments
+                                            )
+                                            return `${installments}x de ${new Intl.NumberFormat('pt-BR', {
+                                                style: 'currency', currency: 'BRL'
+                                            }).format(installmentAmount)} · 1ª parcela em ${dates[0].toLocaleDateString('pt-BR')}`
+                                        })()
+                                        : `${installments}x de ${new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency', currency: 'BRL'
+                                        }).format(installmentAmount)}`
+                                    }
+                                </p>
+                            )}
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-xs text-gray-500">Data</label>
@@ -231,7 +309,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 />
                             </div>
 
-                            {!isEditing && (form.paymentMethod === 'credit_install') && (
+                            {!isEditing && form.paymentMethod === 'credit_install' && (
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-xs text-gray-500">Parcelas</label>
                                     <input

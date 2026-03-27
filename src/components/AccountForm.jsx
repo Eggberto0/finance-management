@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLORS } from '../utils/constants'
+import { useAccounts } from '../hooks/useAccounts'
 
 export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
+    const { accounts } = useAccounts()
     const isEditing = !!account
 
     const [form, setForm] = useState({
@@ -12,6 +14,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
         creditLimit: account?.creditLimit ?? '',
         closingDay: account?.closingDay ?? '',
         dueDay: account?.dueDay ?? '',
+        linkedAccountId: account?.linkedAccountId ?? '',
         color: account?.color ?? ACCOUNT_COLORS[0],
     })
 
@@ -27,8 +30,11 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
             type: form.type,
             currency: form.currency,
             color: form.color,
-            ...(form.type !== 'credit' && {
-                initialBalance: parseFloat(form.initialBalance) || 0
+            ...(form.type === 'credit' && {
+                creditLimit: parseFloat(form.creditLimit) || 0,
+                closingDay: parseInt(form.closingDay) || 1,
+                dueDay: parseInt(form.dueDay) || 1,
+                linkedAccountId: form.linkedAccountId || null,
             }),
             ...(form.type === 'credit' && {
                 creditLimit: parseFloat(form.creditLimit) || 0,
@@ -145,6 +151,21 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                                         onChange={e => handleChange('dueDay', e.target.value)}
                                         className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
                                     />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs text-gray-500">Conta corrente vinculada</label>
+                                    <select
+                                        value={form.linkedAccountId}
+                                        onChange={e => handleChange('linkedAccountId', e.target.value)}
+                                        className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                    >
+                                        <option value="">Nenhuma</option>
+                                        {accounts
+                                            .filter(a => a.type === 'checking' || a.type === 'savings')
+                                            .map(a => (
+                                                <option key={a.id} value={a.id}>{a.name}</option>
+                                            ))}
+                                    </select>
                                 </div>
                             </div>
                         </div>

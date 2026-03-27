@@ -20,6 +20,26 @@ export default function Transactions() {
     const [editing, setEditing] = useState(null)
     const [filterType, setFilterType] = useState('all')
     const [filterStatus, setFilterStatus] = useState('all')
+    const [viewMode, setViewMode] = useState('all')
+    const [selectedMonth, setSelectedMonth] = useState(() => {
+        const now = new Date()
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    })
+    const [showMonthPicker, setShowMonthPicker] = useState(false)
+    const [pickerYear, setPickerYear] = useState(() => new Date().getFullYear())
+
+    function changeMonth(direction) {
+        const [year, month] = selectedMonth.split('-').map(Number)
+        const date = new Date(year, month - 1 + direction, 1)
+        setSelectedMonth(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
+    }
+
+    function formatMonthLabel(yearMonth) {
+        const [year, month] = yearMonth.split('-').map(Number)
+        return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', {
+            month: 'long', year: 'numeric'
+        })
+    }
 
     function handleEdit(transaction) {
         setEditing(transaction)
@@ -56,10 +76,30 @@ export default function Transactions() {
     }
 
     const filtered = transactions.filter(t => {
+        const date = t.date?.toDate?.() ?? new Date(t.date?.seconds * 1000)
+        const dateMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+        if (dateMonth !== selectedMonth) return false
         if (filterType !== 'all' && t.type !== filterType) return false
         if (filterStatus !== 'all' && t.status !== filterStatus) return false
         return true
     })
+
+    const benefitAccountIds = accounts
+        .filter(a => a.type === 'benefit')
+        .map(a => a.id)
+
+    const filteredForSummary = filtered.filter(t => {
+        if (viewMode === 'patrimony') return !benefitAccountIds.includes(t.accountId)
+        if (viewMode === 'benefits') return benefitAccountIds.includes(t.accountId)
+        return true
+    })
+
+    const monthSummary = filteredForSummary.reduce((acc, t) => {
+        if (t.status === 'cancelled') return acc
+        if (t.type === 'income') acc.income += t.amount
+        if (t.type === 'expense') acc.expense += t.amount
+        return acc
+    }, { income: 0, expense: 0 })
 
     if (loading) {
         return (
@@ -71,7 +111,7 @@ export default function Transactions() {
 
     return (
         <Layout>
-            <div className="max-w-3xl mx-auto px-6 py-8">
+            <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800">Lançamentos</h2>
                     <button
@@ -80,6 +120,135 @@ export default function Transactions() {
                     >
                         Novo lançamento
                     </button>
+                </div>
+
+                <div className="flex gap-1 mb-3 bg-gray-100 p-1 rounded-xl w-fit">
+                    {[
+                        { value: 'all', label: 'Geral' },
+                        { value: 'patrimony', label: 'Patrimônio' },
+                        { value: 'benefits', label: 'Benefícios' },
+                    ].map(mode => (
+                        <button
+                            key={mode.value}
+                            onClick={() => setViewMode(mode.value)}
+                            className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === mode.value
+                                ? 'bg-white text-gray-800 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            {mode.label}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                    <button
+                        onClick={() => changeMonth(-1)}
+                        className="text-gray-400 hover:text-gray-600 transition px-2 py-1 rounded-lg hover:bg-gray-100"
+                    >
+                        ←
+                    </button>
+                    <button
+                        onClick={() => {
+                            setPickerYear(parseInt(selectedMonth.split('-')[0]))
+                            setShowMonthPicker(true)
+                        }}
+                        className="text-sm font-medium text-gray-700 capitalize hover:text-gray-900 transition"
+                    >
+                        {formatMonthLabel(selectedMonth)}
+                    </button>
+                    <button
+                        onClick={() => changeMonth(1)}
+                        className="text-gray-400 hover:text-gray-600 transition px-2 py-1 rounded-lg hover:bg-gray-100"
+                    >
+                        →
+                    </button>
+                </div>
+
+                {showMonthPicker && (
+                    <div
+                        className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+                        onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}
+                    >
+                        <div className="bg-white rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4">
+                            <div className="flex items-center justify-between">
+                                <button
+                                    onClick={() => setPickerYear(y => y - 1)}
+                                    className="text-gray-400 hover:text-gray-600 transition px-2 py-1 rounded-lg hover:bg-gray-100"
+                                >
+                                    ←
+                                </button>
+                                <span className="text-sm font-medium text-gray-800">{pickerYear}</span>
+                                <button
+                                    onClick={() => setPickerYear(y => y + 1)}
+                                    className="text-gray-400 hover:text-gray-600 transition px-2 py-1 rounded-lg hover:bg-gray-100"
+                                >
+                                    →
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                                {Array.from({ length: 12 }, (_, i) => {
+                                    const monthValue = `${pickerYear}-${String(i + 1).padStart(2, '0')}`
+                                    const isSelected = monthValue === selectedMonth
+                                    const label = new Date(pickerYear, i, 1)
+                                        .toLocaleDateString('pt-BR', { month: 'short' })
+                                        .replace('.', '')
+
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setSelectedMonth(monthValue)
+                                                setShowMonthPicker(false)
+                                            }}
+                                            className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
+                                                ? 'bg-gray-900 text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    )
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    const now = new Date()
+                                    setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
+                                    setShowMonthPicker(false)
+                                }}
+                                className="text-xs text-gray-400 hover:text-gray-600 transition text-center"
+                            >
+                                Ir para o mês atual
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                    <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3">
+                        <p className="text-xs text-gray-400 mb-1">Receitas</p>
+                        <p className="text-sm font-medium text-green-600">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthSummary.income)}
+                        </p>
+                    </div>
+                    <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3">
+                        <p className="text-xs text-gray-400 mb-1">Despesas</p>
+                        <p className="text-sm font-medium text-red-500">
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthSummary.expense)}
+                        </p>
+                    </div>
+                    <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3">
+                        <p className="text-xs text-gray-400 mb-1">Balanço</p>
+                        <p className={`text-sm font-medium ${monthSummary.income - monthSummary.expense >= 0 ? 'text-gray-800' : 'text-red-500'
+                            }`}>
+                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                                monthSummary.income - monthSummary.expense
+                            )}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex gap-2 mb-6 flex-wrap">
@@ -182,18 +351,21 @@ export default function Transactions() {
                                         </div>
 
                                         <div className="flex flex-col gap-1">
-                                            {transaction.status === 'pending' && (() => {
-                                                const date = transaction.date?.toDate?.() ?? new Date(transaction.date)
+                                            {(() => {
+                                                if (transaction.status !== 'pending') return null
+                                                const date = transaction.date?.toDate?.() ?? new Date(transaction.date.seconds * 1000)
                                                 const today = new Date()
                                                 today.setHours(23, 59, 59, 999)
-                                                return date <= today
+                                                if (date > today) return null
+                                                return (
+                                                    <button
+                                                        onClick={() => confirmTransaction(transaction.id)}
+                                                        className="text-xs text-green-500 hover:text-green-700 transition"
+                                                    >
+                                                        Confirmar
+                                                    </button>
+                                                )
                                             })()}
-                                            <button
-                                                onClick={() => confirmTransaction(transaction.id)}
-                                                className="text-xs text-green-500 hover:text-green-700 transition"
-                                            >
-                                                Confirmar
-                                            </button>
                                             <button
                                                 onClick={() => handleEdit(transaction)}
                                                 className="text-xs text-gray-400 hover:text-gray-600 transition"
