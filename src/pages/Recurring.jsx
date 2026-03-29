@@ -4,7 +4,8 @@ import { useAccounts } from '../hooks/useAccounts'
 import { useRecurring } from '../hooks/useRecurring'
 import { useCategories } from '../hooks/useCategories'
 import RecurringForm from '../components/RecurringForm'
-import { TRANSACTION_TYPES, DAY_RULE_TYPES, WEEKDAYS } from '../utils/constants'
+import ConfirmModal from '../components/ConfirmModal'
+import { WEEKDAYS } from '../utils/constants'
 
 function dayRuleLabel(dayRule) {
     if (!dayRule) return '—'
@@ -25,6 +26,7 @@ export default function Recurring() {
     const { categories } = useCategories()
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
+    const [confirming, setConfirming] = useState(null)
 
     function handleEdit(rule) {
         setEditing(rule)
@@ -49,7 +51,7 @@ export default function Recurring() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">
+            <div className="min-h-screen flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
                 Carregando...
             </div>
         )
@@ -58,7 +60,7 @@ export default function Recurring() {
     function RuleCard({ rule }) {
         const category = getCategory(rule.categoryId)
         return (
-            <div className={`bg-white border border-gray-100 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 ${!rule.active ? 'opacity-50' : ''}`}>
+            <div className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 ${!rule.active ? 'opacity-50' : ''}`}>
                 <div className="flex items-center gap-4 min-w-0">
                     {category ? (
                         <div
@@ -68,11 +70,11 @@ export default function Recurring() {
                             {category.icon}
                         </div>
                     ) : (
-                        <div className="w-9 h-9 rounded-xl bg-gray-100 flex-shrink-0" />
+                        <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
                     )}
                     <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-800">{rule.description}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{rule.description}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                             {getAccountName(rule.accountId)} · {dayRuleLabel(rule.dayRule)}
                             {!rule.active && ' · Inativa'}
                         </p>
@@ -88,12 +90,12 @@ export default function Recurring() {
                     <div className="flex gap-3">
                         <button
                             onClick={() => handleEdit(rule)}
-                            className="text-xs text-gray-400 hover:text-gray-600 transition"
+                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
                         >
                             Editar
                         </button>
                         <button
-                            onClick={() => deleteRule(rule.id)}
+                            onClick={() => setConfirming(rule)}
                             className="text-xs text-red-400 hover:text-red-600 transition"
                         >
                             Excluir
@@ -108,34 +110,43 @@ export default function Recurring() {
         <Layout>
             <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-medium text-gray-800">Recorrentes</h2>
+                    <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Recorrentes</h2>
                     <button
                         onClick={() => setShowForm(true)}
-                        className="bg-gray-900 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         Novo recorrente
                     </button>
                 </div>
 
                 {rules.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 text-sm">
+                    <div className="text-center py-20 text-gray-400 dark:text-gray-500 text-sm">
                         Nenhum lançamento recorrente cadastrado ainda.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-8">
                         {incomeRules.length > 0 && (
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Receitas</p>
+                                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Receitas</p>
                                 {incomeRules.map(rule => <RuleCard key={rule.id} rule={rule} />)}
                             </div>
                         )}
                         {expenseRules.length > 0 && (
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Despesas</p>
+                                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Despesas</p>
                                 {expenseRules.map(rule => <RuleCard key={rule.id} rule={rule} />)}
                             </div>
                         )}
                     </div>
+                )}
+
+                {confirming && (
+                    <ConfirmModal
+                        title="Excluir recorrente?"
+                        message={`"${confirming.description}" e todas as instâncias futuras serão removidas.`}
+                        onConfirm={() => { deleteRule(confirming.id); setConfirming(null) }}
+                        onClose={() => setConfirming(null)}
+                    />
                 )}
 
                 {showForm && (

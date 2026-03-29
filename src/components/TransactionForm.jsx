@@ -29,6 +29,9 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         paymentMethod: transaction?.paymentMethod ?? 'debit',
     })
 
+    const selectedAccount = accounts.find(a => a.id === form.accountId)
+    const isCredit = selectedAccount?.type === 'credit'
+
     useEffect(() => {
         if (isCredit) {
             setForm(prev => ({
@@ -38,9 +41,6 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             }))
         }
     }, [form.accountId])
-
-    const selectedAccount = accounts.find(a => a.id === form.accountId)
-    const isCredit = selectedAccount?.type === 'credit'
 
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
@@ -56,10 +56,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         const [year, month, day] = form.date.split('-').map(Number)
         const date = new Date(year, month - 1, day, 12, 0, 0)
 
-        const tags = form.tags
-            .split(',')
-            .map(t => t.trim())
-            .filter(Boolean)
+        const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean)
 
         const base = {
             type: form.type,
@@ -79,9 +76,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             todayDate.setHours(23, 59, 59, 999)
             const dateOnly = new Date(year, month - 1, day)
             const updatedStatus =
-                base.status === 'confirmed' && dateOnly > todayDate
-                    ? 'pending'
-                    : base.status
+                base.status === 'confirmed' && dateOnly > todayDate ? 'pending' : base.status
             await onUpdate(transaction.id, { ...base, status: updatedStatus })
             onClose()
             return
@@ -99,7 +94,6 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
             let installmentDates
             if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
-                const [year, month, day] = form.date.split('-').map(Number)
                 const purchaseDate = new Date(year, month - 1, day)
                 installmentDates = calcInstallmentDates(
                     purchaseDate,
@@ -127,7 +121,6 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             }
         } else {
             if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
-                const [year, month, day] = form.date.split('-').map(Number)
                 const purchaseDate = new Date(year, month - 1, day)
                 const dueDates = calcInstallmentDates(
                     purchaseDate,
@@ -149,13 +142,16 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         c.type === form.type || c.type === 'both'
     )
 
+    const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
+    const labelClass = "text-xs text-gray-500 dark:text-gray-400"
+
     return (
         <div
             className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
             onClick={e => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-                <h3 className="text-base font-medium text-gray-800">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     {isEditing ? 'Editar lançamento' : 'Novo lançamento'}
                 </h3>
 
@@ -166,8 +162,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 key={t.value}
                                 onClick={() => handleChange('type', t.value)}
                                 className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                    ? 'bg-gray-900 text-white'
-                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {t.label}
@@ -177,7 +173,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">
+                            <label className={labelClass}>
                                 {installments > 1 ? 'Valor total' : 'Valor'}
                             </label>
                             <NumericFormat
@@ -189,15 +185,15 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 decimalScale={2}
                                 fixedDecimalScale
                                 placeholder="R$ 0,00"
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                className={inputClass}
                             />
                             {installments > 1 && totalAmount > 0 && (
-                                <p className="text-xs text-gray-400">
+                                <p className="text-xs text-gray-400 dark:text-gray-500">
                                     {isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay
                                         ? (() => {
-                                            const [year, month, day] = form.date.split('-').map(Number)
+                                            const [y, m, d] = form.date.split('-').map(Number)
                                             const dates = calcInstallmentDates(
-                                                new Date(year, month - 1, day),
+                                                new Date(y, m - 1, d),
                                                 selectedAccount.closingDay,
                                                 selectedAccount.dueDay,
                                                 installments
@@ -214,33 +210,33 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             )}
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Data</label>
+                            <label className={labelClass}>Data</label>
                             <input
                                 type="date"
                                 value={form.date}
                                 onChange={e => handleChange('date', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                className={inputClass}
                             />
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Descrição</label>
+                        <label className={labelClass}>Descrição</label>
                         <input
                             type="text"
                             placeholder="Ex: Almoço, Salário..."
                             value={form.description}
                             onChange={e => handleChange('description', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Conta</label>
+                        <label className={labelClass}>Conta</label>
                         <select
                             value={form.accountId}
                             onChange={e => handleChange('accountId', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                            className={inputClass}
                         >
                             <option value="">Selecione...</option>
                             {accounts.map(a => (
@@ -251,11 +247,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
                     {!isTransfer && form.type === 'expense' && (
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Meio de pagamento</label>
+                            <label className={labelClass}>Meio de pagamento</label>
                             <select
                                 value={form.paymentMethod}
                                 onChange={e => handleChange('paymentMethod', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                className={inputClass}
                             >
                                 {PAYMENT_METHODS.map(p => (
                                     <option key={p.value} value={p.value}>{p.label}</option>
@@ -266,11 +262,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
                     {isTransfer && (
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Conta destino</label>
+                            <label className={labelClass}>Conta destino</label>
                             <select
                                 value={form.transferToAccountId}
                                 onChange={e => handleChange('transferToAccountId', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                className={inputClass}
                             >
                                 <option value="">Selecione...</option>
                                 {accounts
@@ -285,11 +281,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                     {!isTransfer && (
                         <>
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Categoria</label>
+                                <label className={labelClass}>Categoria</label>
                                 <select
                                     value={form.categoryId}
                                     onChange={e => handleChange('categoryId', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                    className={inputClass}
                                 >
                                     <option value="">Sem categoria</option>
                                     {filteredCategories.map(c => (
@@ -299,26 +295,26 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Tags (separadas por vírgula)</label>
+                                <label className={labelClass}>Tags (separadas por vírgula)</label>
                                 <input
                                     type="text"
                                     placeholder="Ex: fixo, essencial..."
                                     value={form.tags}
                                     onChange={e => handleChange('tags', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                    className={inputClass}
                                 />
                             </div>
 
                             {!isEditing && form.paymentMethod === 'credit_install' && (
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-gray-500">Parcelas</label>
+                                    <label className={labelClass}>Parcelas</label>
                                     <input
                                         type="number"
                                         min="2"
                                         max="72"
                                         value={form.installments}
                                         onChange={e => handleChange('installments', e.target.value)}
-                                        className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                        className={inputClass}
                                     />
                                 </div>
                             )}
@@ -326,11 +322,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                     )}
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Status</label>
+                        <label className={labelClass}>Status</label>
                         <select
                             value={form.status}
                             onChange={e => handleChange('status', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                            className={inputClass}
                         >
                             {TRANSACTION_STATUS.map(s => (
                                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -345,20 +341,20 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             onChange={e => handleChange('autoConfirm', e.target.checked)}
                             className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-600">Confirmar automaticamente na data</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Confirmar automaticamente na data</span>
                     </label>
                 </div>
 
                 <div className="flex justify-end gap-3 pt-1">
                     <button
                         onClick={onClose}
-                        className="text-sm text-gray-400 hover:text-gray-600 transition px-4 py-2"
+                        className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="bg-gray-900 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         {isEditing ? 'Salvar' : 'Criar'}
                     </button>

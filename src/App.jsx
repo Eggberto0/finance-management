@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
 import Login from './pages/Login'
+import Budget from './pages/Budget'
 import Accounts from './pages/Accounts'
+import NotFound from './pages/NotFound'
 import Recurring from './pages/Recurring'
 import Dashboard from './pages/Dashboard'
 import Categories from './pages/Categories'
@@ -17,7 +18,8 @@ function AppRoutes() {
       <Route path="/accounts" element={<PrivateRoute><Accounts /></PrivateRoute>} />
       <Route path="/categories" element={<PrivateRoute><Categories /></PrivateRoute>} />
       <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<NotFound />} />
+      <Route path="/budget" element={<PrivateRoute><Budget /></PrivateRoute>} />
       <Route path="/recurring" element={<PrivateRoute><Recurring /></PrivateRoute>} />
     </Routes>
   )

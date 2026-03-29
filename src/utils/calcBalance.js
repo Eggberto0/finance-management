@@ -4,8 +4,6 @@ export function calcAccountBalance(account, transactions) {
     const today = new Date()
     today.setHours(23, 59, 59, 999)
 
-    console.log('todas as transações:', transactions.map(t => ({ status: t.status, amount: t.amount, date: t.date })))
-
     const confirmed = transactions.filter(t => {
         if (t.status !== 'confirmed') return false
 
@@ -21,17 +19,9 @@ export function calcAccountBalance(account, transactions) {
         const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
         const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
 
-        console.log(
-            'date original:', t.date,
-            'dateOnly:', dateOnly,
-            'todayOnly:', todayOnly,
-            'passa:', dateOnly <= todayOnly
-        )
-
         return dateOnly <= todayOnly
     })
 
-    console.log('confirmed count:', confirmed.length)
 
     if (account.type === 'credit') {
         const spent = transactions

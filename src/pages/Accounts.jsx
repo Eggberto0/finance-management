@@ -2,49 +2,63 @@ import { useState } from 'react'
 import Layout from '../components/Layout'
 import { useAccounts } from '../hooks/useAccounts'
 import AccountForm from '../components/AccountForm'
+import ConfirmModal from '../components/ConfirmModal'
 import { calcAccountBalance } from '../utils/calcBalance'
 import { useTransactions } from '../hooks/useTransactions'
 import { ACCOUNT_TYPES, CURRENCIES } from '../utils/constants'
 
 function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, getCurrencyLabel }) {
+    const [confirming, setConfirming] = useState(false)
+
     return (
-        <div className="bg-white border border-gray-100 rounded-2xl px-5 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: account.color }}
-                />
-                <div>
-                    <p className="text-sm font-medium text-gray-800">{account.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                        {getTypeLabel(account.type)} · {getCurrencyLabel(account.currency)}
+        <>
+            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: account.color }}
+                    />
+                    <div>
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{account.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                            {getTypeLabel(account.type)} · {getCurrencyLabel(account.currency)}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
+                            calcAccountBalance(account, transactions) < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                        }`}>
+                        {account.type === 'credit'
+                            ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calcAccountBalance(account, transactions))}`
+                            : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(calcAccountBalance(account, transactions))
+                        }
                     </p>
+                    <button
+                        onClick={() => onEdit(account)}
+                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                    >
+                        Editar
+                    </button>
+                    <button
+                        onClick={() => setConfirming(true)}
+                        className="text-xs text-red-400 hover:text-red-600 transition"
+                    >
+                        Excluir
+                    </button>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
-                <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700' :
-                    calcAccountBalance(account, transactions) < 0 ? 'text-red-500' : 'text-gray-700'
-                    }`}>
-                    {account.type === 'credit'
-                        ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calcAccountBalance(account, transactions))}`
-                        : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(calcAccountBalance(account, transactions))
-                    }
-                </p>
-                <button
-                    onClick={() => onEdit(account)}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition"
-                >
-                    Editar
-                </button>
-                <button
-                    onClick={() => onDelete(account.id)}
-                    className="text-xs text-red-400 hover:text-red-600 transition"
-                >
-                    Excluir
-                </button>
-            </div>
-        </div>
+            {confirming && (
+                <ConfirmModal
+                    title="Excluir conta?"
+                    message={`"${account.name}" será excluída permanentemente.`}
+                    onConfirm={() => { onDelete(account.id); setConfirming(false) }}
+                    onClose={() => setConfirming(false)}
+                />
+            )}
+        </>
     )
 }
 
@@ -77,7 +91,7 @@ export default function Accounts() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center text-gray-400 text-sm">
+            <div className="min-h-screen flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
                 Carregando...
             </div>
         )
@@ -87,24 +101,24 @@ export default function Accounts() {
         <Layout>
             <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-medium text-gray-800">Contas</h2>
+                    <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Contas</h2>
                     <button
                         onClick={() => setShowForm(true)}
-                        className="bg-gray-900 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         Nova conta
                     </button>
                 </div>
 
                 {accounts.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 text-sm">
+                    <div className="text-center py-20 text-gray-400 dark:text-gray-500 text-sm">
                         Nenhuma conta cadastrada ainda.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-8">
                         {normalAccounts.length > 0 && (
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Contas</p>
+                                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Contas</p>
                                 {normalAccounts.map(account => (
                                     <AccountCard
                                         key={account.id}
@@ -121,7 +135,7 @@ export default function Accounts() {
 
                         {benefitAccounts.length > 0 && (
                             <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Benefícios</p>
+                                <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Benefícios</p>
                                 {benefitAccounts.map(account => (
                                     <AccountCard
                                         key={account.id}

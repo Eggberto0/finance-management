@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from '../services/firebase'
 import {
     collection, addDoc, updateDoc, deleteDoc,
-    doc, onSnapshot, query, orderBy
+    doc, onSnapshot, query, orderBy, getDocs, where
 } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -50,6 +50,15 @@ export function useTransactions() {
         return unsubscribe
     }, [user])
 
+    async function deleteInstallments(installmentId) {
+        const q = query(
+            collection(db, 'users', user.uid, 'transactions'),
+            where('installmentId', '==', installmentId)
+        )
+        const snapshot = await getDocs(q)
+        snapshot.docs.forEach(doc => deleteDoc(doc.ref))
+    }
+
     async function addTransaction(data) {
         await addDoc(collection(db, 'users', user.uid, 'transactions'), {
             ...data,
@@ -84,6 +93,7 @@ export function useTransactions() {
         updateTransaction,
         deleteTransaction,
         confirmTransaction,
-        cancelTransaction
+        cancelTransaction,
+        deleteInstallments
     }
 }

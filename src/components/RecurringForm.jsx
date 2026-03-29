@@ -85,13 +85,16 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
     const showWeekday = form.dayRuleType === 'nthWeekday'
     const showFallback = form.dayRuleType === 'fixed'
 
+    const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
+    const labelClass = "text-xs text-gray-500 dark:text-gray-400"
+
     return (
         <div
             className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
             onClick={e => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
-                <h3 className="text-base font-medium text-gray-800">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     {isEditing ? 'Editar recorrente' : 'Novo recorrente'}
                 </h3>
 
@@ -102,8 +105,8 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                                 key={t.value}
                                 onClick={() => handleChange('type', t.value)}
                                 className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                        ? 'bg-gray-900 text-white'
-                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {t.label}
@@ -112,18 +115,18 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Descrição</label>
+                        <label className={labelClass}>Descrição</label>
                         <input
                             type="text"
                             placeholder="Ex: Salário, Aluguel..."
                             value={form.description}
                             onChange={e => handleChange('description', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Valor base</label>
+                        <label className={labelClass}>Valor base</label>
                         <NumericFormat
                             value={form.baseAmount}
                             onValueChange={values => handleChange('baseAmount', values.floatValue ?? '')}
@@ -133,16 +136,16 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                             decimalScale={2}
                             fixedDecimalScale
                             placeholder="R$ 0,00"
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Conta</label>
+                        <label className={labelClass}>Conta</label>
                         <select
                             value={form.accountId}
                             onChange={e => handleChange('accountId', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                            className={inputClass}
                         >
                             <option value="">Selecione...</option>
                             {accounts.map(a => (
@@ -152,11 +155,11 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Categoria</label>
+                        <label className={labelClass}>Categoria</label>
                         <select
                             value={form.categoryId}
                             onChange={e => handleChange('categoryId', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                            className={inputClass}
                         >
                             <option value="">Sem categoria</option>
                             {filteredCategories.map(c => (
@@ -166,25 +169,25 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Tags (separadas por vírgula)</label>
+                        <label className={labelClass}>Tags (separadas por vírgula)</label>
                         <input
                             type="text"
                             placeholder="Ex: fixo, essencial..."
                             value={form.tags}
                             onChange={e => handleChange('tags', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
-                    <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
-                        <p className="text-xs font-medium text-gray-500">Regra de dia</p>
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-4 flex flex-col gap-3">
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Regra de dia</p>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Tipo</label>
+                            <label className={labelClass}>Tipo</label>
                             <select
                                 value={form.dayRuleType}
                                 onChange={e => handleChange('dayRuleType', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                className={inputClass}
                             >
                                 {DAY_RULE_TYPES.map(t => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -194,7 +197,7 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
 
                         {showDay && (
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">
+                                <label className={labelClass}>
                                     {form.dayRuleType === 'fixed' ? 'Dia do mês' :
                                         form.dayRuleType === 'nthBusinessDay' ? 'Qual dia útil?' :
                                             'Qual ocorrência?'}
@@ -205,18 +208,18 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                                     max={form.dayRuleType === 'fixed' ? 31 : 5}
                                     value={form.dayRuleDay}
                                     onChange={e => handleChange('dayRuleDay', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                    className={inputClass}
                                 />
                             </div>
                         )}
 
                         {showWeekday && (
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Dia da semana</label>
+                                <label className={labelClass}>Dia da semana</label>
                                 <select
                                     value={form.dayRuleWeekday}
                                     onChange={e => handleChange('dayRuleWeekday', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                    className={inputClass}
                                 >
                                     {WEEKDAYS.map(w => (
                                         <option key={w.value} value={w.value}>{w.label}</option>
@@ -227,11 +230,11 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
 
                         {showFallback && (
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Se cair em feriado ou fim de semana</label>
+                                <label className={labelClass}>Se cair em feriado ou fim de semana</label>
                                 <select
                                     value={form.dayRuleFallback}
                                     onChange={e => handleChange('dayRuleFallback', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                    className={inputClass}
                                 >
                                     {BUSINESS_DAY_FALLBACK.map(f => (
                                         <option key={f.value} value={f.value}>{f.label}</option>
@@ -241,25 +244,25 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                         )}
                     </div>
 
-                    <div className="border-t border-gray-100 pt-4 flex flex-col gap-3">
-                        <p className="text-xs font-medium text-gray-500">Período</p>
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-4 flex flex-col gap-3">
+                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Período</p>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Início</label>
+                                <label className={labelClass}>Início</label>
                                 <input
                                     type="date"
                                     value={form.startDate}
                                     onChange={e => handleChange('startDate', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                    className={inputClass}
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Fim (opcional)</label>
+                                <label className={labelClass}>Fim (opcional)</label>
                                 <input
                                     type="date"
                                     value={form.endDate}
                                     onChange={e => handleChange('endDate', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                    className={inputClass}
                                 />
                             </div>
                         </div>
@@ -272,7 +275,7 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                             onChange={e => handleChange('autoConfirm', e.target.checked)}
                             className="w-4 h-4 rounded"
                         />
-                        <span className="text-sm text-gray-600">Confirmar automaticamente na data</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Confirmar automaticamente na data</span>
                     </label>
 
                     {isEditing && (
@@ -283,7 +286,7 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                                 onChange={e => handleChange('active', e.target.checked)}
                                 className="w-4 h-4 rounded"
                             />
-                            <span className="text-sm text-gray-600">Regra ativa</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-300">Regra ativa</span>
                         </label>
                     )}
                 </div>
@@ -291,13 +294,13 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                 <div className="flex justify-end gap-3 pt-1">
                     <button
                         onClick={onClose}
-                        className="text-sm text-gray-400 hover:text-gray-600 transition px-4 py-2"
+                        className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="bg-gray-900 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         {isEditing ? 'Salvar' : 'Criar'}
                     </button>

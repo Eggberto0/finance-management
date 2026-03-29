@@ -17,51 +17,50 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
 
     async function handleSubmit() {
         if (!form.name.trim()) return
-
         const data = {
             name: form.name.trim(),
             type: form.type,
             color: form.color,
             icon: form.icon,
         }
-
         if (isEditing) {
             await onUpdate(category.id, data)
         } else {
             await onAdd(data)
         }
-
         onClose()
     }
+
+    const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
 
     return (
         <div
             className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
             onClick={e => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5">
-                <h3 className="text-base font-medium text-gray-800">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     {isEditing ? 'Editar categoria' : 'Nova categoria'}
                 </h3>
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Nome</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Nome</label>
                         <input
                             type="text"
                             placeholder="Ex: Alimentação, Salário..."
                             value={form.name}
                             onChange={e => handleChange('name', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Tipo</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Tipo</label>
                         <select
                             value={form.type}
                             onChange={e => handleChange('type', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                            className={inputClass}
                         >
                             {CATEGORY_TYPES.map(t => (
                                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -70,15 +69,15 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs text-gray-500">Ícone</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Ícone</label>
                         <div className="flex gap-2 flex-wrap">
                             {CATEGORY_ICONS.map(icon => (
                                 <button
                                     key={icon}
                                     onClick={() => handleChange('icon', icon)}
                                     className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center transition ${form.icon === icon
-                                            ? 'bg-gray-900 text-white'
-                                            : 'bg-gray-100 hover:bg-gray-200'
+                                            ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     {icon}
@@ -88,7 +87,7 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs text-gray-500">Cor</label>
+                        <label className="text-xs text-gray-500 dark:text-gray-400">Cor</label>
                         <div className="flex gap-2 flex-wrap items-center">
                             {ACCOUNT_COLORS.map(color => (
                                 <button
@@ -125,13 +124,13 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
                 <div className="flex justify-end gap-3 pt-1">
                     <button
                         onClick={onClose}
-                        className="text-sm text-gray-400 hover:text-gray-600 transition px-4 py-2"
+                        className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="bg-gray-900 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         {isEditing ? 'Salvar' : 'Criar categoria'}
                     </button>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
+import { NumericFormat } from 'react-number-format'
 import { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLORS } from '../utils/constants'
 
 export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
@@ -36,11 +37,9 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                 dueDay: parseInt(form.dueDay) || 1,
                 linkedAccountId: form.linkedAccountId || null,
             }),
-            ...(form.type === 'credit' && {
-                creditLimit: parseFloat(form.creditLimit) || 0,
-                closingDay: parseInt(form.closingDay) || 1,
-                dueDay: parseInt(form.dueDay) || 1,
-            }),
+            ...(form.type !== 'credit' && {
+                initialBalance: parseFloat(form.initialBalance) || 0
+            })
         }
 
         if (isEditing) {
@@ -54,35 +53,38 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
 
     const isCredit = form.type === 'credit'
 
+    const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
+    const labelClass = "text-xs text-gray-500 dark:text-gray-400"
+
     return (
         <div
             className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
             onClick={e => e.target === e.currentTarget && onClose()}
         >
-            <div className="bg-white rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5">
-                <h3 className="text-base font-medium text-gray-800">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md mx-4 p-6 flex flex-col gap-5">
+                <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                     {isEditing ? 'Editar conta' : 'Nova conta'}
                 </h3>
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs text-gray-500">Nome</label>
+                        <label className={labelClass}>Nome</label>
                         <input
                             type="text"
                             placeholder="Ex: Nubank, Poupança..."
                             value={form.name}
                             onChange={e => handleChange('name', e.target.value)}
-                            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                            className={inputClass}
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Tipo</label>
+                            <label className={labelClass}>Tipo</label>
                             <select
                                 value={form.type}
                                 onChange={e => handleChange('type', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                className={inputClass}
                             >
                                 {ACCOUNT_TYPES.map(t => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -91,11 +93,11 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                         </div>
 
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Moeda</label>
+                            <label className={labelClass}>Moeda</label>
                             <select
                                 value={form.currency}
                                 onChange={e => handleChange('currency', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                className={inputClass}
                             >
                                 {CURRENCIES.map(c => (
                                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -106,13 +108,17 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
 
                     {!isCredit && (
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-xs text-gray-500">Saldo inicial</label>
-                            <input
-                                type="number"
-                                placeholder="0,00"
+                            <label className={labelClass}>Saldo inicial</label>
+                            <NumericFormat
                                 value={form.initialBalance}
-                                onChange={e => handleChange('initialBalance', e.target.value)}
-                                className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                onValueChange={values => handleChange('initialBalance', values.floatValue ?? '')}
+                                thousandSeparator="."
+                                decimalSeparator=","
+                                prefix="R$ "
+                                decimalScale={2}
+                                fixedDecimalScale
+                                placeholder="R$ 0,00"
+                                className={inputClass}
                             />
                         </div>
                     )}
@@ -120,44 +126,48 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                     {isCredit && (
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs text-gray-500">Limite do cartão</label>
-                                <input
-                                    type="number"
-                                    placeholder="0,00"
+                                <label className={labelClass}>Limite do cartão</label>
+                                <NumericFormat
                                     value={form.creditLimit}
-                                    onChange={e => handleChange('creditLimit', e.target.value)}
-                                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                    onValueChange={values => handleChange('creditLimit', values.floatValue ?? '')}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    prefix="R$ "
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                    placeholder="R$ 0,00"
+                                    className={inputClass}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-gray-500">Dia de fechamento</label>
+                                    <label className={labelClass}>Dia de fechamento</label>
                                     <input
                                         type="number"
                                         min="1" max="31"
                                         placeholder="Ex: 23"
                                         value={form.closingDay}
                                         onChange={e => handleChange('closingDay', e.target.value)}
-                                        className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                        className={inputClass}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-gray-500">Dia de vencimento</label>
+                                    <label className={labelClass}>Dia de vencimento</label>
                                     <input
                                         type="number"
                                         min="1" max="31"
                                         placeholder="Ex: 10"
                                         value={form.dueDay}
                                         onChange={e => handleChange('dueDay', e.target.value)}
-                                        className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition"
+                                        className={inputClass}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs text-gray-500">Conta corrente vinculada</label>
+                                    <label className={labelClass}>Conta corrente vinculada</label>
                                     <select
                                         value={form.linkedAccountId}
                                         onChange={e => handleChange('linkedAccountId', e.target.value)}
-                                        className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 outline-none focus:border-gray-400 transition bg-white"
+                                        className={inputClass}
                                     >
                                         <option value="">Nenhuma</option>
                                         {accounts
@@ -172,7 +182,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                     )}
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs text-gray-500">Cor</label>
+                        <label className={labelClass}>Cor</label>
                         <div className="flex gap-2 flex-wrap items-center">
                             {ACCOUNT_COLORS.map(color => (
                                 <button
@@ -186,8 +196,8 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                                     }}
                                 />
                             ))}
-
-                            <label className="w-7 h-7 rounded-full cursor-pointer overflow-hidden relative"
+                            <label
+                                className="w-7 h-7 rounded-full cursor-pointer overflow-hidden relative"
                                 style={{
                                     background: 'conic-gradient(red, yellow, lime, cyan, blue, magenta, red)',
                                     outline: !ACCOUNT_COLORS.includes(form.color) ? `2px solid ${form.color}` : 'none',
@@ -209,13 +219,13 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                 <div className="flex justify-end gap-3 pt-1">
                     <button
                         onClick={onClose}
-                        className="text-sm text-gray-400 hover:text-gray-600 transition px-4 py-2"
+                        className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-4 py-2"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="bg-gray-900 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 transition"
+                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-5 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
                     >
                         {isEditing ? 'Salvar' : 'Criar conta'}
                     </button>
