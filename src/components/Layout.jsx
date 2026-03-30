@@ -9,6 +9,7 @@ const navItems = [
     { to: '/transactions', label: 'Lançamentos' },
     { to: '/recurring', label: 'Recorrentes' },
     { to: '/budget', label: 'Orçamento' },
+    { to: '/goals', label: 'Cofrinhos' },
 ]
 
 export default function Layout({ children }) {

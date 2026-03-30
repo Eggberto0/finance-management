@@ -48,6 +48,7 @@ export default function Dashboard() {
         overdueTransactions,
         invoicePreview,
         lastUpdated,
+        goalsSummary,
     } = useDashboard(selectedMonth)
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
@@ -88,6 +89,36 @@ export default function Dashboard() {
                         ))}
                     </div>
                 </div>
+
+                {goalsSummary.length > 0 && (
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Cofrinhos</p>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            {goalsSummary.map(goal => (
+                                <div key={goal.id} className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <span style={{ fontSize: 14 }}>{goal.emoji}</span>
+                                        <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{goal.name}</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all"
+                                            style={{
+                                                width: `${goal.percentage}%`,
+                                                backgroundColor: goal.isComplete ? '#1D9E75' : goal.color
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                                        {Math.round(goal.percentage)}% · {new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency', currency: 'BRL'
+                                        }).format(goal.current)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-4 gap-3">
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useGoals } from './useGoals'
 import { useBudgets } from './useBudgets'
 import { useAccounts } from './useAccounts'
 import { useCategories } from './useCategories'
@@ -25,6 +26,21 @@ export function useDashboard(selectedMonth) {
             )
         })
     }, [transactions, year, month])
+
+    const { goals } = useGoals()
+
+    const goalsSummary = useMemo(() => {
+        return goals.map(goal => {
+            const account = goal.accountId
+                ? accounts.find(a => a.id === goal.accountId)
+                : null
+            const current = account
+                ? calcAccountBalance(account, transactions)
+                : (goal.currentAmount ?? 0)
+            const percentage = Math.min((current / goal.targetAmount) * 100, 100)
+            return { ...goal, current, percentage, isComplete: current >= goal.targetAmount }
+        })
+    }, [goals, accounts, transactions])
 
     const invoicePreview = useMemo(() =>
         buildInvoicePreview(accounts, transactions, 3),
@@ -175,5 +191,6 @@ export function useDashboard(selectedMonth) {
         overdueTransactions,
         invoicePreview,
         lastUpdated,
+        goalsSummary,
     }
 }
