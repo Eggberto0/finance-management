@@ -72,7 +72,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center justify-between">
                     <p className="text-gray-500 dark:text-gray-400 text-sm">
-                        Olá, {user.displayName.split(' ')[0]}! Aqui está seu resumo financeiro.
+                        Olá, {user.displayName?.split(' ')[0]}! Aqui está seu resumo financeiro.
                     </p>
                     <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
                         {PERIOD_OPTIONS.map(p => (
