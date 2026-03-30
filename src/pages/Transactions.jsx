@@ -148,8 +148,8 @@ export default function Transactions() {
                             key={mode.value}
                             onClick={() => setViewMode(mode.value)}
                             className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === mode.value
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                 }`}
                         >
                             {mode.label}
@@ -202,8 +202,8 @@ export default function Transactions() {
                                             key={i}
                                             onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
                                             className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             {label}
@@ -241,8 +241,8 @@ export default function Transactions() {
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-3">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Balanço</p>
                         <p className={`text-sm font-medium ${monthSummary.income - monthSummary.expense >= 0
-                                ? 'text-gray-800 dark:text-gray-100'
-                                : 'text-red-500'
+                            ? 'text-gray-800 dark:text-gray-100'
+                            : 'text-red-500'
                             }`}>
                             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
                                 monthSummary.income - monthSummary.expense
@@ -262,8 +262,8 @@ export default function Transactions() {
                             key={f.value}
                             onClick={() => setFilterType(f.value)}
                             className={`text-sm px-4 py-1.5 rounded-xl transition ${filterType === f.value
-                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                         >
                             {f.label}
@@ -322,6 +322,11 @@ export default function Transactions() {
                                                     </span>
                                                 )}
                                             </p>
+                                            {transaction.confirmedAt && transaction.status === 'confirmed' && (
+                                                <p className="text-xs text-green-500 dark:text-green-400 mt-0.5">
+                                                    Pago em: {formatDate(transaction.confirmedAt)}
+                                                </p>
+                                            )}
                                             {transaction.tags?.length > 0 && (
                                                 <div className="flex gap-1 mt-1 flex-wrap">
                                                     {transaction.tags.map(tag => (
@@ -340,8 +345,8 @@ export default function Transactions() {
                                     <div className="flex items-center gap-3 flex-shrink-0">
                                         <div className="text-right">
                                             <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' :
-                                                    transaction.type === 'expense' ? 'text-red-500' :
-                                                        'text-gray-600 dark:text-gray-400'
+                                                transaction.type === 'expense' ? 'text-red-500' :
+                                                    'text-gray-600 dark:text-gray-400'
                                                 }`}>
                                                 {formatAmount(transaction.amount, transaction.type)}
                                             </p>

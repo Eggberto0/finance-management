@@ -27,6 +27,9 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         autoConfirm: transaction?.autoConfirm ?? false,
         installments: transaction?.installmentTotal ?? 1,
         paymentMethod: transaction?.paymentMethod ?? 'debit',
+        confirmedAt: transaction?.confirmedAt
+            ? (transaction.confirmedAt.toDate?.() ?? new Date(transaction.confirmedAt)).toISOString().split('T')[0]
+            : '',
     })
 
     const selectedAccount = accounts.find(a => a.id === form.accountId)
@@ -69,6 +72,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             status: form.status,
             autoConfirm: form.autoConfirm,
             paymentMethod: form.paymentMethod,
+            confirmedAt: form.status === 'confirmed'
+                ? form.confirmedAt
+                    ? (() => { const [y, m, d] = form.confirmedAt.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
+                    : new Date()
+                : null,
         }
 
         if (isEditing) {
@@ -162,8 +170,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 key={t.value}
                                 onClick={() => handleChange('type', t.value)}
                                 className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {t.label}
@@ -333,6 +341,21 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             ))}
                         </select>
                     </div>
+
+                    {form.status === 'confirmed' && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className={labelClass}>Data do pagamento (opcional)</label>
+                            <input
+                                type="date"
+                                value={form.confirmedAt}
+                                onChange={e => handleChange('confirmedAt', e.target.value)}
+                                className={inputClass}
+                            />
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
+                                Deixe em branco para usar a data de hoje.
+                            </p>
+                        </div>
+                    )}
 
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input

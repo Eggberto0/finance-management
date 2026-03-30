@@ -76,7 +76,8 @@ export function useTransactions() {
 
     async function confirmTransaction(id) {
         await updateDoc(doc(db, 'users', user.uid, 'transactions', id), {
-            status: 'confirmed'
+            status: 'confirmed',
+            confirmedAt: new Date()
         })
     }
 
