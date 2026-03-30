@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Layout from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useDashboard } from '../hooks/useDashboard'
+import InvoicePreview from '../components/InvoicePreview'
 import { calcAccountBalance } from '../utils/calcBalance'
 import { useGenerateBudgets } from '../hooks/useGenerateBudgets'
 import { useGenerateInstances } from '../hooks/useGenerateInstances'
@@ -45,6 +46,7 @@ export default function Dashboard() {
         creditCardAlerts,
         budgetAlerts,
         overdueTransactions,
+        invoicePreview,
     } = useDashboard(selectedMonth)
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
@@ -174,6 +176,8 @@ export default function Dashboard() {
                         </div>
                     </div>
                 )}
+
+                <InvoicePreview invoicePreview={invoicePreview} />
 
                 <div className="grid grid-cols-3 gap-4">
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">

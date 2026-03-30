@@ -4,6 +4,7 @@ import { useAccounts } from './useAccounts'
 import { useCategories } from './useCategories'
 import { useTransactions } from './useTransactions'
 import { calcAccountBalance } from '../utils/calcBalance'
+import { buildInvoicePreview } from '../utils/creditCardInvoice'
 
 export function useDashboard(selectedMonth) {
     const { accounts } = useAccounts()
@@ -22,6 +23,11 @@ export function useDashboard(selectedMonth) {
             )
         })
     }, [transactions, year, month])
+    
+    const invoicePreview = useMemo(() =>
+        buildInvoicePreview(accounts, transactions, 3),
+        [accounts, transactions]
+    )
 
     const confirmedMonth = useMemo(() =>
         monthTransactions.filter(t => t.status === 'confirmed'),
@@ -160,5 +166,6 @@ export function useDashboard(selectedMonth) {
         creditCardAlerts,
         budgetAlerts,
         overdueTransactions,
+        invoicePreview,
     }
 }
