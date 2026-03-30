@@ -47,6 +47,7 @@ export default function Dashboard() {
         budgetAlerts,
         overdueTransactions,
         invoicePreview,
+        lastUpdated,
     } = useDashboard(selectedMonth)
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
@@ -78,8 +79,8 @@ export default function Dashboard() {
                                 key={p.value}
                                 onClick={() => setPeriod(p.value)}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${period === p.value
-                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
                             >
                                 {p.label}
@@ -93,6 +94,11 @@ export default function Dashboard() {
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Patrimônio total</p>
                         <p className="text-2xl font-medium text-gray-800 dark:text-gray-100">{fmt(totalBalance)}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">contas e poupança</p>
+                        {lastUpdated && (
+                            <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                                Câmbio: {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        )}
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Receitas</p>
@@ -121,8 +127,8 @@ export default function Dashboard() {
                                 <div
                                     key={budget.id}
                                     className={`rounded-xl px-4 py-3 ${budget.isOver
-                                            ? 'bg-red-50 dark:bg-red-900/20'
-                                            : 'bg-amber-50 dark:bg-amber-900/20'
+                                        ? 'bg-red-50 dark:bg-red-900/20'
+                                        : 'bg-amber-50 dark:bg-amber-900/20'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2 mb-2">

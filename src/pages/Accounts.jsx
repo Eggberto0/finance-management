@@ -5,10 +5,13 @@ import AccountForm from '../components/AccountForm'
 import ConfirmModal from '../components/ConfirmModal'
 import { calcAccountBalance } from '../utils/calcBalance'
 import { useTransactions } from '../hooks/useTransactions'
+import { useExchangeRates } from '../hooks/useExchangeRates'
 import { ACCOUNT_TYPES, CURRENCIES } from '../utils/constants'
 
-function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, getCurrencyLabel }) {
+function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, getCurrencyLabel, convertToBRL }) {
     const [confirming, setConfirming] = useState(false)
+    const balance = calcAccountBalance(account, transactions)
+    const balanceBRL = account.currency !== 'BRL' ? convertToBRL(balance, account.currency) : null
 
     return (
         <>
@@ -27,14 +30,21 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
-                            calcAccountBalance(account, transactions) < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
-                        }`}>
-                        {account.type === 'credit'
-                            ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(calcAccountBalance(account, transactions))}`
-                            : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(calcAccountBalance(account, transactions))
-                        }
-                    </p>
+                    <div className="text-right">
+                        <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
+                                balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                            }`}>
+                            {account.type === 'credit'
+                                ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)}`
+                                : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)
+                            }
+                        </p>
+                        {balanceBRL !== null && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                ≈ {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(balanceBRL)}
+                            </p>
+                        )}
+                    </div>
                     <button
                         onClick={() => onEdit(account)}
                         className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
@@ -64,6 +74,7 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
 
 export default function Accounts() {
     const { accounts, loading, addAccount, updateAccount, deleteAccount } = useAccounts()
+    const { convertToBRL, formatRate, loading: ratesLoading } = useExchangeRates()
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
     const { transactions } = useTransactions()
@@ -128,6 +139,7 @@ export default function Accounts() {
                                         onDelete={deleteAccount}
                                         getTypeLabel={getTypeLabel}
                                         getCurrencyLabel={getCurrencyLabel}
+                                        convertToBRL={convertToBRL}
                                     />
                                 ))}
                             </div>
@@ -145,6 +157,7 @@ export default function Accounts() {
                                         onDelete={deleteAccount}
                                         getTypeLabel={getTypeLabel}
                                         getCurrencyLabel={getCurrencyLabel}
+                                        convertToBRL={convertToBRL}
                                     />
                                 ))}
                             </div>
