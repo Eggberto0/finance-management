@@ -6,6 +6,7 @@ export default function Login() {
     const { login, loginWithEmail, registerWithEmail } = useAuth()
     const navigate = useNavigate()
     const [mode, setMode] = useState('login')
+    const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
@@ -22,7 +23,7 @@ export default function Login() {
             if (mode === 'login') {
                 await loginWithEmail(email, password)
             } else {
-                await registerWithEmail(email, password)
+                await registerWithEmail(email, password, name)
             }
             navigate('/')
         } catch (err) {
@@ -52,8 +53,8 @@ export default function Login() {
                     <button
                         onClick={() => { setMode('login'); setError('') }}
                         className={`flex-1 text-xs py-1.5 rounded-lg transition ${mode === 'login'
-                                ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400'
+                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400'
                             }`}
                     >
                         Entrar
@@ -61,8 +62,8 @@ export default function Login() {
                     <button
                         onClick={() => { setMode('register'); setError('') }}
                         className={`flex-1 text-xs py-1.5 rounded-lg transition ${mode === 'register'
-                                ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400'
+                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                            : 'text-gray-500 dark:text-gray-400'
                             }`}
                     >
                         Cadastrar
@@ -70,6 +71,15 @@ export default function Login() {
                 </div>
 
                 <div className="flex flex-col gap-3 w-full">
+                    {mode === 'register' && (
+                        <input
+                            type="text"
+                            placeholder="Seu nome"
+                            value={name}
+                            onChange={e => setName(e.target.value)}
+                            className={inputClass}
+                        />
+                    )}
                     <input
                         type="email"
                         placeholder="E-mail"
