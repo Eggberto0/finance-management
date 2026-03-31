@@ -247,9 +247,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             className={inputClass}
                         >
                             <option value="">Selecione...</option>
-                            {accounts.map(a => (
-                                <option key={a.id} value={a.id}>{a.name}</option>
-                            ))}
+                            {accounts
+                                .filter(a => a.type !== 'credit')
+                                .map(a => (
+                                    <option key={a.id} value={a.id}>{a.name}</option>
+                                ))}
                         </select>
                     </div>
 

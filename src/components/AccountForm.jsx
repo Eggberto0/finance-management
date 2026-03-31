@@ -3,9 +3,10 @@ import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
 import { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLORS } from '../utils/constants'
 
-export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
+export default function AccountForm({ account, onClose, onAdd, onUpdate, excludeTypes = [] }) {
     const { accounts } = useAccounts()
     const isEditing = !!account
+    const availableTypes = ACCOUNT_TYPES.filter(t => !excludeTypes.includes(t.value))
 
     const [form, setForm] = useState({
         name: account?.name ?? '',
@@ -86,7 +87,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate }) {
                                 onChange={e => handleChange('type', e.target.value)}
                                 className={inputClass}
                             >
-                                {ACCOUNT_TYPES.map(t => (
+                                {availableTypes.map(t => (
                                     <option key={t.value} value={t.value}>{t.label}</option>
                                 ))}
                             </select>

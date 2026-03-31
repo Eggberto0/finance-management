@@ -5,11 +5,12 @@ import { Link, useLocation } from 'react-router-dom'
 const navItems = [
     { to: '/', label: 'Dashboard' },
     { to: '/accounts', label: 'Contas' },
-    { to: '/categories', label: 'Categorias' },
+    { to: '/cards', label: 'Cartões' },
     { to: '/transactions', label: 'Lançamentos' },
     { to: '/recurring', label: 'Recorrentes' },
-    { to: '/budget', label: 'Orçamento' },
     { to: '/goals', label: 'Cofrinhos' },
+    { to: '/budget', label: 'Orçamento' },
+    { to: '/categories', label: 'Categorias' },
 ]
 
 export default function Layout({ children }) {

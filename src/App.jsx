@@ -1,5 +1,6 @@
 import Login from './pages/Login'
 import Goals from './pages/Goals'
+import Cards from './pages/Cards'
 import Budget from './pages/Budget'
 import Accounts from './pages/Accounts'
 import NotFound from './pages/NotFound'
@@ -20,6 +21,7 @@ function AppRoutes() {
       <Route path="/categories" element={<PrivateRoute><Categories /></PrivateRoute>} />
       <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/cards" element={<PrivateRoute><Cards /></PrivateRoute>} />
       <Route path="/goals" element={<PrivateRoute><Goals /></PrivateRoute>} />
       <Route path="/budget" element={<PrivateRoute><Budget /></PrivateRoute>} />
       <Route path="/recurring" element={<PrivateRoute><Recurring /></PrivateRoute>} />

@@ -32,7 +32,7 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
                 <div className="flex items-center gap-3">
                     <div className="text-right">
                         <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
-                                balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                            balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
                             }`}>
                             {account.type === 'credit'
                                 ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)}`
@@ -97,7 +97,7 @@ export default function Accounts() {
         return CURRENCIES.find(c => c.value === value)?.label ?? value
     }
 
-    const normalAccounts = accounts.filter(a => a.type !== 'benefit')
+    const normalAccounts = accounts.filter(a => a.type !== 'benefit' && a.type !== 'credit')
     const benefitAccounts = accounts.filter(a => a.type === 'benefit')
 
     if (loading) {
@@ -171,6 +171,7 @@ export default function Accounts() {
                         onClose={handleClose}
                         onAdd={addAccount}
                         onUpdate={updateAccount}
+                        excludeTypes={['credit']}
                     />
                 )}
             </div>
