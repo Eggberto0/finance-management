@@ -6,6 +6,7 @@ export function calcAccountBalance(account, transactions) {
 
     const confirmed = transactions.filter(t => {
         if (t.status !== 'confirmed') return false
+        if (t.isHistorical) return false
 
         let date
         if (t.date?.toDate) {

@@ -30,6 +30,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         confirmedAt: transaction?.confirmedAt
             ? (transaction.confirmedAt.toDate?.() ?? new Date(transaction.confirmedAt)).toISOString().split('T')[0]
             : '',
+        isHistorical: transaction?.isHistorical ?? false,
     })
 
     const selectedAccount = accounts.find(a => a.id === form.accountId)
@@ -77,6 +78,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                     ? (() => { const [y, m, d] = form.confirmedAt.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
                     : new Date()
                 : null,
+            isHistorical: form.isHistorical,
         }
 
         if (isEditing) {
@@ -367,6 +369,17 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                             className="w-4 h-4 rounded"
                         />
                         <span className="text-sm text-gray-600 dark:text-gray-300">Confirmar automaticamente na data</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={form.isHistorical}
+                            onChange={e => handleChange('isHistorical', e.target.checked)}
+                            className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                            Lançamento histórico (não altera o saldo)
+                        </span>
                     </label>
                 </div>
 
