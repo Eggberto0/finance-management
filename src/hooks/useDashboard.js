@@ -15,6 +15,41 @@ export function useDashboard(selectedMonth) {
     const [year, month] = selectedMonth.split('-').map(Number)
     const { convertToBRL, rates, lastUpdated } = useExchangeRates()
     const { budgets } = useBudgets(`${year}-${String(month).padStart(2, '0')}`)
+    const prevMonth = month === 1 ? 12 : month - 1
+    const prevYear = month === 1 ? year - 1 : year
+
+    const prevMonthTransactions = useMemo(() => {
+        return transactions.filter(t => {
+            const date = t.date?.toDate?.() ?? new Date(t.date?.seconds * 1000)
+            return (
+                date.getFullYear() === prevYear &&
+                date.getMonth() + 1 === prevMonth &&
+                t.status !== 'cancelled'
+            )
+        })
+    }, [transactions, prevYear, prevMonth])
+
+    const prevConfirmed = useMemo(() =>
+        prevMonthTransactions.filter(t => t.status === 'confirmed'),
+        [prevMonthTransactions]
+    )
+
+    const prevTotalExpense = useMemo(() =>
+        prevConfirmed
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0),
+        [prevConfirmed]
+    )
+
+    const expenseByCategotyPrev = useMemo(() => {
+        const map = {}
+        prevConfirmed
+            .filter(t => t.type === 'expense' && t.categoryId)
+            .forEach(t => {
+                map[t.categoryId] = (map[t.categoryId] ?? 0) + t.amount
+            })
+        return map
+    }, [prevConfirmed])
 
     const monthTransactions = useMemo(() => {
         return transactions.filter(t => {
@@ -192,5 +227,7 @@ export function useDashboard(selectedMonth) {
         invoicePreview,
         lastUpdated,
         goalsSummary,
+        prevTotalExpense,
+        expenseByCategotyPrev,
     }
 }
