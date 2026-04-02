@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { NumericFormat } from 'react-number-format'
+import CategoryIcon from './CategoryIcon'
 import { useAccounts } from '../hooks/useAccounts'
+import { NumericFormat } from 'react-number-format'
+
+const GOAL_ICONS = [
+    'Target', 'Home', 'Plane', 'Car', 'Smartphone', 'Laptop',
+    'GraduationCap', 'Heart', 'Umbrella', 'PawPrint', 'DollarSign', 'Gamepad2',
+]
+
+const COLORS = ['#0de238', '#11e3d5', '#e53e07', '#8902e2', '#2a34ff', '#e4d019', '#e61476', '#c30000',]
 
 export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
     const { accounts } = useAccounts()
@@ -14,8 +22,8 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
             ? (goal.deadline.toDate?.() ?? new Date(goal.deadline)).toISOString().split('T')[0]
             : '',
         accountId: goal?.accountId ?? '',
-        color: goal?.color ?? '#5DCAA5',
-        emoji: goal?.emoji ?? '🎯',
+        color: goal?.color ?? '#0de238',
+        icon: goal?.icon ?? 'Target',
     })
 
     function handleChange(field, value) {
@@ -34,7 +42,7 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
                 : null,
             accountId: form.accountId || null,
             color: form.color,
-            emoji: form.emoji,
+            icon: form.icon,
         }
 
         if (isEditing) {
@@ -45,9 +53,6 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
 
         onClose()
     }
-
-    const EMOJIS = ['🎯', '🏠', '✈️', '🚗', '📱', '💻', '🎓', '💍', '🏖️', '🐾', '💰', '🎮']
-    const COLORS = ['#5DCAA5', '#378ADD', '#7F77DD', '#D85A30', '#D4537E', '#639922', '#BA7517', '#888780']
 
     const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
     const labelClass = "text-xs text-gray-500 dark:text-gray-400"
@@ -64,18 +69,18 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
-                        <label className={labelClass}>Emoji</label>
+                        <label className={labelClass}>Ícone</label>
                         <div className="flex gap-2 flex-wrap">
-                            {EMOJIS.map(emoji => (
+                            {GOAL_ICONS.map(icon => (
                                 <button
-                                    key={emoji}
-                                    onClick={() => handleChange('emoji', emoji)}
-                                    className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center transition ${form.emoji === emoji
-                                            ? 'bg-gray-900 dark:bg-gray-600'
-                                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    key={icon}
+                                    onClick={() => handleChange('icon', icon)}
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition ${form.icon === icon
+                                            ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
-                                    {emoji}
+                                    <CategoryIcon name={icon} size={16} />
                                 </button>
                             ))}
                         </div>

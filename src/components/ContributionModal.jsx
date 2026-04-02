@@ -20,7 +20,7 @@ export default function ContributionModal({ goal, onClose, onAdd }) {
                     <h3 className="text-base font-medium text-gray-800 dark:text-gray-100">
                         Adicionar ao cofrinho
                     </h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{goal.emoji} {goal.name}</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1"><CategoryIcon name={goal.icon} size={16} /> {goal.name}</p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">

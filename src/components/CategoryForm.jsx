@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import CategoryIcon from './CategoryIcon'
 import { CATEGORY_TYPES, CATEGORY_ICONS, ACCOUNT_COLORS } from '../utils/constants'
 
 export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
@@ -75,12 +76,12 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
                                 <button
                                     key={icon}
                                     onClick={() => handleChange('icon', icon)}
-                                    className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center transition ${form.icon === icon
-                                            ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition ${form.icon === icon
+                                            ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
-                                    {icon}
+                                    <CategoryIcon name={icon} size={16} />
                                 </button>
                             ))}
                         </div>

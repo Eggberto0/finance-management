@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { useAccounts } from '../hooks/useAccounts'
-import { useTransactions } from '../hooks/useTransactions'
-import { useCardInvoice } from '../hooks/useCardInvoice'
-import { useCategories } from '../hooks/useCategories'
-import { calcAccountBalance } from '../utils/calcBalance'
-import TransactionForm from '../components/TransactionForm'
-import AccountForm from '../components/AccountForm'
-import ConfirmModal from '../components/ConfirmModal'
-import DeleteTransactionModal from '../components/DeleteTransactionModal'
 import Layout from '../components/Layout'
+import { useAccounts } from '../hooks/useAccounts'
+import AccountForm from '../components/AccountForm'
+import CategoryIcon from '../components/CategoryIcon'
+import ConfirmModal from '../components/ConfirmModal'
+import { useCategories } from '../hooks/useCategories'
+import { useCardInvoice } from '../hooks/useCardInvoice'
+import { calcAccountBalance } from '../utils/calcBalance'
+import { useTransactions } from '../hooks/useTransactions'
+import TransactionForm from '../components/TransactionForm'
+import DeleteTransactionModal from '../components/DeleteTransactionModal'
 
 function fmt(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -98,7 +99,7 @@ function InvoiceView({ card, month, onBack }) {
                                             className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                                             style={{ backgroundColor: category.color + '22' }}
                                         >
-                                            {category.icon}
+                                            <CategoryIcon name={category.icon} size={14} />
                                         </div>
                                     ) : (
                                         <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />

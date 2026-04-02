@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
 import { CATEGORY_TYPES } from '../utils/constants'
+import CategoryIcon from '../components/CategoryIcon'
 import CategoryForm from '../components/CategoryForm'
 import ConfirmModal from '../components/ConfirmModal'
 import { useCategories } from '../hooks/useCategories'
@@ -44,7 +45,7 @@ export default function Categories() {
                         className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                         style={{ backgroundColor: category.color + '22' }}
                     >
-                        {category.icon}
+                        <CategoryIcon name={category.icon} size={16} color={category.color} />
                     </div>
                     <div>
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{category.name}</p>

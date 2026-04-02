@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
 import { useAccounts } from '../hooks/useAccounts'
+import CategoryIcon from '../components/CategoryIcon'
 import { useCategories } from '../hooks/useCategories'
 import { TRANSACTION_STATUS } from '../utils/constants'
 import { useTransactions } from '../hooks/useTransactions'
@@ -304,7 +305,7 @@ export default function Transactions() {
                                                 className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                                                 style={{ backgroundColor: category.color + '22' }}
                                             >
-                                                {category.icon}
+                                                <CategoryIcon name={category.icon} size={14} />
                                             </div>
                                         ) : (
                                             <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />

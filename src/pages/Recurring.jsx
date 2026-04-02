@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
+import { WEEKDAYS } from '../utils/constants'
 import { useAccounts } from '../hooks/useAccounts'
 import { useRecurring } from '../hooks/useRecurring'
+import CategoryIcon from '../components/CategoryIcon'
+import ConfirmModal from '../components/ConfirmModal'
 import { useCategories } from '../hooks/useCategories'
 import RecurringForm from '../components/RecurringForm'
-import ConfirmModal from '../components/ConfirmModal'
-import { WEEKDAYS } from '../utils/constants'
 
 function dayRuleLabel(dayRule) {
     if (!dayRule) return '—'
@@ -67,7 +68,7 @@ export default function Recurring() {
                             className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                             style={{ backgroundColor: category.color + '22' }}
                         >
-                            {category.icon}
+                            <CategoryIcon name={category.icon} size={14} />
                         </div>
                     ) : (
                         <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />

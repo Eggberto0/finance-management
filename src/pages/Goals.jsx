@@ -1,12 +1,13 @@
 import { useState } from 'react'
+import Layout from '../components/Layout'
 import { useGoals } from '../hooks/useGoals'
+import GoalForm from '../components/GoalForm'
 import { useAccounts } from '../hooks/useAccounts'
+import ConfirmModal from '../components/ConfirmModal'
+import CategoryIcon from '../components/CategoryIcon'
 import { calcAccountBalance } from '../utils/calcBalance'
 import { useTransactions } from '../hooks/useTransactions'
-import GoalForm from '../components/GoalForm'
 import ContributionModal from '../components/ContributionModal'
-import ConfirmModal from '../components/ConfirmModal'
-import Layout from '../components/Layout'
 
 function fmt(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -93,7 +94,7 @@ export default function Goals() {
                                                 className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                                                 style={{ backgroundColor: goal.color + '22' }}
                                             >
-                                                {goal.emoji}
+                                                <CategoryIcon name={goal.icon} size={16} />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{goal.name}</p>

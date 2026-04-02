@@ -5,16 +5,20 @@ import { useOnboarding } from '../hooks/useOnboarding'
 import { Link, useLocation } from 'react-router-dom'
 import ConfirmModal from '../components/ConfirmModal'
 import OnboardingModal from '../components/OnboardingModal'
+import {
+    LayoutDashboard, CreditCard, Wallet, ArrowLeftRight,
+    RefreshCw, PiggyBank, Calculator, Tag
+} from 'lucide-react'
 
 const navItems = [
-    { to: '/', label: 'Dashboard' },
-    { to: '/accounts', label: 'Contas' },
-    { to: '/cards', label: 'Cartões' },
-    { to: '/transactions', label: 'Lançamentos' },
-    { to: '/recurring', label: 'Recorrentes' },
-    { to: '/goals', label: 'Cofrinhos' },
-    { to: '/budget', label: 'Orçamento' },
-    { to: '/categories', label: 'Categorias' },
+    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/accounts', label: 'Contas', icon: Wallet },
+    { to: '/cards', label: 'Cartões', icon: CreditCard },
+    { to: '/transactions', label: 'Lançamentos', icon: ArrowLeftRight },
+    { to: '/recurring', label: 'Recorrentes', icon: RefreshCw },
+    { to: '/goals', label: 'Cofrinhos', icon: PiggyBank },
+    { to: '/budget', label: 'Orçamento', icon: Calculator },
+    { to: '/categories', label: 'Categorias', icon: Tag },
 ]
 
 export default function Layout({ children }) {
@@ -109,18 +113,22 @@ export default function Layout({ children }) {
 
             <nav className="w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-8">
                 <div className="flex gap-6">
-                    {navItems.map(item => (
-                        <Link
-                            key={item.to}
-                            to={item.to}
-                            className={`text-sm py-3 border-b-2 transition ${location.pathname === item.to
-                                ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
-                                : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
-                                }`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
+                    {navItems.map(item => {
+                        const Icon = item.icon
+                        return (
+                            <Link
+                                key={item.to}
+                                to={item.to}
+                                className={`flex items-center gap-1.5 text-sm py-3 border-b-2 transition ${location.pathname === item.to
+                                        ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
+                                        : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                <Icon size={14} />
+                                {item.label}
+                            </Link>
+                        )
+                    })}
                 </div>
             </nav>
 

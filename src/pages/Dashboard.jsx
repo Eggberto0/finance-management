@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Layout from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useDashboard } from '../hooks/useDashboard'
+import CategoryIcon from '../components/CategoryIcon'
 import { useOnboarding } from '../hooks/useOnboarding'
 import InvoicePreview from '../components/InvoicePreview'
 import PercentageView from '../components/PercentageView'
@@ -235,7 +236,7 @@ export default function Dashboard() {
                                     {goalsSummary.map(goal => (
                                         <div key={goal.id} className="flex flex-col gap-2">
                                             <div className="flex items-center gap-2">
-                                                <span style={{ fontSize: 14 }}>{goal.emoji}</span>
+                                                <span style={{ fontSize: 14 }}><CategoryIcon name={goal.icon} size={16} /></span>
                                                 <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{goal.name}</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -305,7 +306,7 @@ export default function Dashboard() {
                                             <div key={categoryId} className="flex flex-col gap-1.5">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        <span style={{ fontSize: 14 }}>{category.icon}</span>
+                                                        <span style={{ fontSize: 14 }}><CategoryIcon name={category.icon} size={14} /></span>
                                                         <span className="text-xs text-gray-600 dark:text-gray-400">{category.name}</span>
                                                     </div>
                                                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{fmt(amount)}</span>
