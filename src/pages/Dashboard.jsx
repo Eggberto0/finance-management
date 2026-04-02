@@ -2,8 +2,10 @@ import { useState } from 'react'
 import Layout from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useDashboard } from '../hooks/useDashboard'
+import { useOnboarding } from '../hooks/useOnboarding'
 import InvoicePreview from '../components/InvoicePreview'
 import { calcAccountBalance } from '../utils/calcBalance'
+import OnboardingModal from '../components/OnboardingModal'
 import { useGenerateBudgets } from '../hooks/useGenerateBudgets'
 import { useGenerateInstances } from '../hooks/useGenerateInstances'
 
@@ -50,6 +52,8 @@ export default function Dashboard() {
         lastUpdated,
         goalsSummary,
     } = useDashboard(selectedMonth)
+
+    const { showOnboarding, completeOnboarding } = useOnboarding()
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
@@ -349,6 +353,11 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+            {
+                showOnboarding && (
+                    <OnboardingModal onComplete={completeOnboarding} />
+                )
+            }
         </Layout>
     )
 }

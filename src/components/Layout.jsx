@@ -47,8 +47,8 @@ export default function Layout({ children }) {
                             key={item.to}
                             to={item.to}
                             className={`text-sm py-3 border-b-2 transition ${location.pathname === item.to
-                                    ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
-                                    : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
+                                ? 'text-gray-800 dark:text-gray-100 border-gray-800 dark:border-gray-100'
+                                : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
                                 }`}
                         >
                             {item.label}
