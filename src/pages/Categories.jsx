@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
+import Button from '../components/Button'
 import { CATEGORY_TYPES } from '../utils/constants'
 import CategoryIcon from '../components/CategoryIcon'
 import CategoryForm from '../components/CategoryForm'
@@ -75,12 +76,7 @@ export default function Categories() {
             <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Categorias</h2>
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
-                    >
-                        Nova categoria
-                    </button>
+                    <Button onClick={() => setShowForm(true)}>Nova categoria</Button>
                 </div>
 
                 {categories.length === 0 ? (

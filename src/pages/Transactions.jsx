@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
+import Button from '../components/Button'
 import { useAccounts } from '../hooks/useAccounts'
 import CategoryIcon from '../components/CategoryIcon'
 import { useCategories } from '../hooks/useCategories'
@@ -131,12 +132,7 @@ export default function Transactions() {
             <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Lançamentos</h2>
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
-                    >
-                        Novo lançamento
-                    </button>
+                    <Button onClick={() => setShowForm(true)}>Novo lançamento</Button>
                 </div>
 
                 <div className="flex gap-1 mb-3 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl w-fit">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
+import Button from '../components/Button'
 import { useGoals } from '../hooks/useGoals'
 import GoalForm from '../components/GoalForm'
 import { useAccounts } from '../hooks/useAccounts'
@@ -62,12 +63,7 @@ export default function Goals() {
             <div className="w-full px-18 py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Cofrinhos</h2>
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
-                    >
-                        Novo cofrinho
-                    </button>
+                    <Button onClick={() => setShowForm(true)}>Novo cofrinho</Button>
                 </div>
 
                 {goals.length === 0 ? (

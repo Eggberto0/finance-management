@@ -123,12 +123,15 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Patrimônio total</p>
-                        <p className="text-2xl font-medium text-gray-800 dark:text-gray-100">{fmt(totalBalance)}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">contas e poupança</p>
+                    <div
+                        className="rounded-2xl px-5 py-4"
+                        style={{ backgroundColor: 'var(--accent)' }}
+                    >
+                        <p className="text-xs mb-2" style={{ color: 'var(--accent-light)' }}>Patrimônio total</p>
+                        <p className="text-2xl font-medium text-white">{fmt(totalBalance)}</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--accent-light)' }}>contas e poupança</p>
                         {lastUpdated && (
-                            <p className="text-xs text-gray-300 dark:text-gray-600 mt-1">
+                            <p className="text-xs mt-1 opacity-50 text-white">
                                 Câmbio: {lastUpdated.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                             </p>
                         )}

@@ -21,27 +21,20 @@ body,
   max-width: none;
 }
 
-body {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --border: #f3f4f6;
+  --accent: #2d6a4f;
+  --accent-light: #d8edd6;
+  --accent-text: #fff;
+  --bg-page: #f4f6f3;
 }
 
 html.dark {
-  --bg-primary: #111827;
-  --bg-secondary: #111827;
-  --bg-card: #1f2937;
-  --text-primary: #f9fafb;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --border: #374151;
+  --accent: #4ade80;
+  --accent-light: #14532d;
+  --accent-text: #052e16;
+  --bg-page: #111827;
+}
+
+body {
+  background-color: var(--bg-page);
 }

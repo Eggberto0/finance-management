@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
+import Layout from '../components/Layout'
+import Button from '../components/Button'
 import { useBudgets } from '../hooks/useBudgets'
-import { useTransactions } from '../hooks/useTransactions'
-import { useCategories } from '../hooks/useCategories'
 import BudgetForm from '../components/BudgetForm'
 import ConfirmModal from '../components/ConfirmModal'
-import Layout from '../components/Layout'
+import { useCategories } from '../hooks/useCategories'
+import { useTransactions } from '../hooks/useTransactions'
 
 export default function Budget() {
     const now = new Date()
@@ -101,12 +102,7 @@ export default function Budget() {
                                 Copiar mês anterior
                             </button>
                         )}
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="bg-gray-900 dark:bg-gray-700 text-white text-sm px-4 py-2 rounded-xl hover:bg-gray-700 dark:hover:bg-gray-600 transition"
-                        >
-                            Novo limite
-                        </button>
+                        <Button onClick={() => setShowForm(true)}>Novo limite</Button>
                     </div>
                 </div>
 
