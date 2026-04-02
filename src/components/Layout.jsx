@@ -26,7 +26,7 @@ function FinancerLogo() {
         <div className="flex items-center gap-2.5">
             <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ backgroundColor: 'var(--accent)' }}
+                style={{ backgroundColor: 'var(--accent)', border: 'solid 1px white' }}
             >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M3 8h10" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
