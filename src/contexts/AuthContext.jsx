@@ -1,6 +1,6 @@
 import { auth, provider } from '../services/firebase'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { onAuthStateChanged, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { onAuthStateChanged, signInWithPopup, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, deleteUser } from 'firebase/auth'
 
 const AuthContext = createContext()
 
@@ -21,6 +21,11 @@ export function AuthProvider({ children }) {
         return signInWithPopup(auth, provider)
     }
 
+    async function deleteAccount() {
+        if (!user) return
+        await deleteUser(user)
+    }
+
     function logout() {
         return signOut(auth)
     }
@@ -37,7 +42,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loginWithEmail, registerWithEmail }}>
+        <AuthContext.Provider value={{ user, login, logout, loginWithEmail, registerWithEmail, deleteAccount }}>
             {!loading && children}
         </AuthContext.Provider>
     )

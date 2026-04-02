@@ -30,5 +30,12 @@ export function useOnboarding() {
         setShowOnboarding(false)
     }
 
-    return { showOnboarding, loading, completeOnboarding }
+    async function restartOnboarding() {
+        if (!user) return
+        const ref = doc(db, 'users', user.uid, 'settings', 'onboarding')
+        await setDoc(ref, { completed: false })
+        setShowOnboarding(true)
+    }
+
+    return { showOnboarding, loading, completeOnboarding, restartOnboarding }
 }
