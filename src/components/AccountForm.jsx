@@ -10,7 +10,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
 
     const [form, setForm] = useState({
         name: account?.name ?? '',
-        type: account?.type ?? 'checking',
+        type: account?.type ?? availableTypes[0]?.value ?? 'checking',
         currency: account?.currency ?? 'BRL',
         initialBalance: account?.initialBalance ?? '',
         creditLimit: account?.creditLimit ?? '',

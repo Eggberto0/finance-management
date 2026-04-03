@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 const ACCENT_COLORS = {
     green: { light: '#2d6a4f', dark: '#00a13b', lightBg: '#d8edd6', darkBg: '#003f19' },
     blue: { light: '#1e40af', dark: '#076be6', lightBg: '#dbeafe', darkBg: '#1e3a5f' },
-    purple: { light: '#6d28d9', dark: '#5f2fee', lightBg: '#ede9fe', darkBg: '#340657' },
+    purple: { light: '#6d28d9', dark: '#831ade', lightBg: '#ede9fe', darkBg: '#340657' },
     orange: { light: '#c2410c', dark: '#fb923c', lightBg: '#ffedd5', darkBg: '#431407' },
     pink: { light: '#f30b6c', dark: '#f472b6', lightBg: '#fce7f3', darkBg: '#500724' },
 }

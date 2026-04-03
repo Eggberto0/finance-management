@@ -18,22 +18,19 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
 
     return (
         <>
-            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
+            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
                     <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: account.color }}
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{account.name}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                             {getTypeLabel(account.type)} · {getCurrencyLabel(account.currency)}
                         </p>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                         <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
                                 balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
                             }`}>
@@ -48,15 +45,18 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
                             </p>
                         )}
                     </div>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
                     <button
                         onClick={() => onEdit(account)}
-                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                     >
                         Editar
                     </button>
                     <button
                         onClick={() => setConfirming(true)}
-                        className="text-xs text-red-400 hover:text-red-600 transition"
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
                     >
                         Excluir
                     </button>
@@ -77,7 +77,7 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
 
 export default function Accounts() {
     const { accounts, loading, addAccount, updateAccount, deleteAccount } = useAccounts()
-    const { convertToBRL, loading: ratesLoading } = useExchangeRates()
+    const { convertToBRL } = useExchangeRates()
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
     const { transactions } = useTransactions()
