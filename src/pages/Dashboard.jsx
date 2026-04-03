@@ -37,30 +37,16 @@ export default function Dashboard() {
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     const [selectedMonth, setSelectedMonth] = useState(currentMonth)
     const [period, setPeriod] = useState('month')
-
     const [viewMode, setViewMode] = useState('general')
 
     const {
-        normalAccounts,
-        benefitAccounts,
-        transactions,
-        totalBalance,
-        totalIncome,
-        totalExpense,
-        expenseByCategory,
-        upcomingTransactions,
-        creditCardAlerts,
-        budgetAlerts,
-        overdueTransactions,
-        invoicePreview,
-        lastUpdated,
-        goalsSummary,
-        prevTotalExpense,
-        expenseByCategotyPrev,
+        normalAccounts, benefitAccounts, transactions, totalBalance,
+        totalIncome, totalExpense, expenseByCategory, upcomingTransactions,
+        creditCardAlerts, budgetAlerts, overdueTransactions, invoicePreview,
+        lastUpdated, goalsSummary, prevTotalExpense, expenseByCategotyPrev,
     } = useDashboard(selectedMonth)
 
     const { showOnboarding, completeOnboarding } = useOnboarding()
-
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
     function formatDate(date) {
@@ -78,19 +64,20 @@ export default function Dashboard() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8 flex flex-col gap-6">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8 flex flex-col gap-4 md:gap-6">
 
-                <div className="flex items-center justify-between">
+                {/* Header do dashboard */}
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <p className="text-gray-500 dark:text-gray-400 text-sm">
                         Olá, {user.displayName?.split(' ')[0]}! Aqui está seu resumo financeiro.
                     </p>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
                             <button
                                 onClick={() => setViewMode('general')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'general'
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400'
+                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 Geral
@@ -98,8 +85,8 @@ export default function Dashboard() {
                             <button
                                 onClick={() => setViewMode('percentage')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'percentage'
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400'
+                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400'
                                     }`}
                             >
                                 Percentual
@@ -110,9 +97,9 @@ export default function Dashboard() {
                                 <button
                                     key={p.value}
                                     onClick={() => setPeriod(p.value)}
-                                    className={`text-xs px-3 py-1.5 rounded-lg transition ${period === p.value
-                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    className={`text-xs px-2 md:px-3 py-1.5 rounded-lg transition ${period === p.value
+                                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                         }`}
                                 >
                                     {p.label}
@@ -122,13 +109,11 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-3">
-                    <div
-                        className="rounded-2xl px-5 py-4"
-                        style={{ backgroundColor: 'var(--accent)' }}
-                    >
+                {/* Cards de resumo — 2 colunas no mobile, 4 no desktop */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="rounded-2xl px-4 md:px-5 py-4" style={{ backgroundColor: 'var(--accent)' }}>
                         <p className="text-xs mb-2" style={{ color: 'var(--accent-light)' }}>Patrimônio total</p>
-                        <p className="text-2xl font-medium text-white">{fmt(totalBalance)}</p>
+                        <p className="text-xl md:text-2xl font-medium text-white">{fmt(totalBalance)}</p>
                         <p className="text-xs mt-1" style={{ color: 'var(--accent-light)' }}>contas e poupança</p>
                         {lastUpdated && (
                             <p className="text-xs mt-1 opacity-50 text-white">
@@ -136,19 +121,19 @@ export default function Dashboard() {
                             </p>
                         )}
                     </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Receitas</p>
-                        <p className="text-2xl font-medium text-green-600">{fmt(totalIncome)}</p>
+                        <p className="text-xl md:text-2xl font-medium text-green-600">{fmt(totalIncome)}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">confirmadas no mês</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Despesas</p>
-                        <p className="text-2xl font-medium text-red-500">{fmt(totalExpense)}</p>
+                        <p className="text-xl md:text-2xl font-medium text-red-500">{fmt(totalExpense)}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">confirmadas no mês</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Balanço</p>
-                        <p className={`text-2xl font-medium ${totalIncome - totalExpense >= 0 ? 'text-gray-800 dark:text-gray-100' : 'text-red-500'}`}>
+                        <p className={`text-xl md:text-2xl font-medium ${totalIncome - totalExpense >= 0 ? 'text-gray-800 dark:text-gray-100' : 'text-red-500'}`}>
                             {fmt(totalIncome - totalExpense)}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">receitas − despesas</p>
@@ -169,17 +154,16 @@ export default function Dashboard() {
                 ) : (
                     <>
                         {budgetAlerts.length > 0 && (
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex flex-col gap-3">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4 flex flex-col gap-3">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Alertas de orçamento</p>
-                                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                     {budgetAlerts.map(budget => (
                                         <div
                                             key={budget.id}
-                                            className={`rounded-xl px-4 py-3 ${budget.isOver ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
-                                                }`}
+                                            className={`rounded-xl px-4 py-3 ${budget.isOver ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20'}`}
                                         >
                                             <div className="flex items-center gap-2 mb-2">
-                                                <span style={{ fontSize: 14 }}>{budget.category?.icon}</span>
+                                                <CategoryIcon name={budget.category?.icon} size={14} />
                                                 <span className={`text-xs font-medium ${budget.isOver ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>
                                                     {budget.category?.name}
                                                 </span>
@@ -201,7 +185,7 @@ export default function Dashboard() {
                         )}
 
                         {overdueTransactions.length > 0 && (
-                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                            <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-red-700 dark:text-red-400">
                                     {overdueTransactions.length === 1
                                         ? '1 lançamento em atraso'
@@ -233,13 +217,13 @@ export default function Dashboard() {
                         <InvoicePreview invoicePreview={invoicePreview} />
 
                         {goalsSummary.length > 0 && (
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Cofrinhos</p>
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     {goalsSummary.map(goal => (
                                         <div key={goal.id} className="flex flex-col gap-2">
                                             <div className="flex items-center gap-2">
-                                                <span style={{ fontSize: 14 }}><CategoryIcon name={goal.icon} size={16} /></span>
+                                                <CategoryIcon name={goal.icon} size={14} />
                                                 <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{goal.name}</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -262,8 +246,9 @@ export default function Dashboard() {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                        {/* Grid principal — coluna única no mobile, 3 colunas no desktop */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Contas</p>
                                 <div className="flex flex-col gap-1">
                                     {normalAccounts.filter(a => a.type !== 'credit').map(account => (
@@ -278,7 +263,6 @@ export default function Dashboard() {
                                         </div>
                                     ))}
                                 </div>
-
                                 {benefitAccounts.length > 0 && (
                                     <>
                                         <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide">Benefícios</p>
@@ -299,7 +283,7 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Gastos por categoria</p>
                                 {expenseByCategory.length === 0 ? (
                                     <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum gasto registrado.</p>
@@ -309,7 +293,7 @@ export default function Dashboard() {
                                             <div key={categoryId} className="flex flex-col gap-1.5">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        <span style={{ fontSize: 14 }}><CategoryIcon name={category.icon} size={14} /></span>
+                                                        <CategoryIcon name={category.icon} size={14} />
                                                         <span className="text-xs text-gray-600 dark:text-gray-400">{category.name}</span>
                                                     </div>
                                                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{fmt(amount)}</span>
@@ -329,9 +313,8 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
+                            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Próximos lançamentos</p>
-
                                 {creditCardAlerts.length > 0 && (
                                     <div className="flex flex-col gap-2">
                                         {creditCardAlerts.map(({ account, balance, daysUntilDue }) => {
@@ -348,7 +331,6 @@ export default function Dashboard() {
                                         })}
                                     </div>
                                 )}
-
                                 {upcomingTransactions.length === 0 && creditCardAlerts.length === 0 ? (
                                     <p className="text-sm text-gray-400 dark:text-gray-500">Nenhum lançamento pendente.</p>
                                 ) : (
@@ -357,11 +339,11 @@ export default function Dashboard() {
                                             const days = getDaysUntil(t.date)
                                             return (
                                                 <div key={t.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                                                    <div>
-                                                        <p className="text-sm text-gray-700 dark:text-gray-300">{t.description || '—'}</p>
+                                                    <div className="min-w-0 flex-1 mr-3">
+                                                        <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{t.description || '—'}</p>
                                                         <p className="text-xs text-gray-400 dark:text-gray-500">{daysLabel(days)} · {formatDate(t.date)}</p>
                                                     </div>
-                                                    <span className={`text-sm font-medium ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
+                                                    <span className={`text-sm font-medium flex-shrink-0 ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
                                                         {t.type === 'income' ? '+' : '-'}{fmt(t.amount)}
                                                     </span>
                                                 </div>
@@ -373,7 +355,6 @@ export default function Dashboard() {
                         </div>
                     </>
                 )}
-
             </div>
 
             {showOnboarding && (

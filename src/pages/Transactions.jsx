@@ -10,10 +10,10 @@ import TransactionForm from '../components/TransactionForm'
 import DeleteTransactionModal from '../components/DeleteTransactionModal'
 
 const STATUS_STYLES = {
-    confirmed: 'bg-green-50 text-green-700',
-    pending: 'bg-yellow-50 text-yellow-700',
-    cancelled: 'bg-gray-100 text-gray-400',
-    overdue: 'bg-red-50 text-red-600',
+    confirmed: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400',
+    pending: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400',
+    cancelled: 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+    overdue: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400',
 }
 
 const STATUS_LABELS = {
@@ -48,9 +48,7 @@ export default function Transactions() {
 
     function formatMonthLabel(yearMonth) {
         const [year, month] = yearMonth.split('-').map(Number)
-        return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', {
-            month: 'long', year: 'numeric'
-        })
+        return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     }
 
     function handleEdit(transaction) {
@@ -77,9 +75,7 @@ export default function Transactions() {
     }
 
     function formatAmount(amount, type) {
-        const formatted = new Intl.NumberFormat('pt-BR', {
-            style: 'currency', currency: 'BRL'
-        }).format(Math.abs(amount))
+        const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(amount))
         if (type === 'income') return `+${formatted}`
         if (type === 'expense') return `-${formatted}`
         return formatted
@@ -129,13 +125,14 @@ export default function Transactions() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8">
-                <div className="flex items-center justify-between mb-6">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Lançamentos</h2>
                     <Button onClick={() => setShowForm(true)}>Novo lançamento</Button>
                 </div>
 
-                <div className="flex gap-1 mb-3 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl w-fit">
+                {/* Toggle geral/patrimônio/benefícios */}
+                <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl w-fit">
                     {[
                         { value: 'all', label: 'Geral' },
                         { value: 'patrimony', label: 'Patrimônio' },
@@ -145,8 +142,8 @@ export default function Transactions() {
                             key={mode.value}
                             onClick={() => setViewMode(mode.value)}
                             className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === mode.value
-                                ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400'
                                 }`}
                         >
                             {mode.label}
@@ -154,40 +151,192 @@ export default function Transactions() {
                     ))}
                 </div>
 
+                {/* Navegação de mês */}
                 <div className="flex items-center justify-between mb-4">
+                    <button onClick={() => changeMonth(-1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
                     <button
-                        onClick={() => changeMonth(-1)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                        ←
-                    </button>
-                    <button
-                        onClick={() => {
-                            setPickerYear(parseInt(selectedMonth.split('-')[0]))
-                            setShowMonthPicker(true)
-                        }}
+                        onClick={() => { setPickerYear(parseInt(selectedMonth.split('-')[0])); setShowMonthPicker(true) }}
                         className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize hover:text-gray-900 dark:hover:text-white transition"
                     >
                         {formatMonthLabel(selectedMonth)}
                     </button>
-                    <button
-                        onClick={() => changeMonth(1)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                        →
-                    </button>
+                    <button onClick={() => changeMonth(1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">→</button>
                 </div>
+
+                {/* Cards de resumo */}
+                <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
+                    {[
+                        { label: 'Receitas', value: monthSummary.income, color: 'text-green-600' },
+                        { label: 'Despesas', value: monthSummary.expense, color: 'text-red-500' },
+                        { label: 'Balanço', value: monthSummary.income - monthSummary.expense, color: monthSummary.income - monthSummary.expense >= 0 ? 'text-gray-800 dark:text-gray-100' : 'text-red-500' },
+                    ].map(item => (
+                        <div key={item.label} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-3 md:px-4 py-3">
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{item.label}</p>
+                            <p className={`text-xs md:text-sm font-medium ${item.color}`}>
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Filtros */}
+                <div className="flex gap-2 mb-4 flex-wrap items-center">
+                    {[
+                        { value: 'all', label: 'Todos' },
+                        { value: 'expense', label: 'Despesas' },
+                        { value: 'income', label: 'Receitas' },
+                        { value: 'transfer', label: 'Transf.' },
+                    ].map(f => (
+                        <button
+                            key={f.value}
+                            onClick={() => setFilterType(f.value)}
+                            className={`text-xs px-3 py-1.5 rounded-xl transition ${filterType === f.value
+                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                }`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
+                    <div className="ml-auto">
+                        <select
+                            value={filterStatus}
+                            onChange={e => setFilterStatus(e.target.value)}
+                            className="text-xs border border-gray-200 dark:border-gray-600 rounded-xl px-2 py-1.5 text-gray-600 dark:text-gray-300 outline-none bg-white dark:bg-gray-800"
+                        >
+                            <option value="all">Todos status</option>
+                            {TRANSACTION_STATUS.map(s => (
+                                <option key={s.value} value={s.value}>{s.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {/* Lista de transações */}
+                {filtered.length === 0 ? (
+                    <div className="text-center py-20 text-gray-400 dark:text-gray-500 text-sm">
+                        Nenhum lançamento encontrado.
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {filtered.map(transaction => {
+                            const category = getCategory(transaction.categoryId)
+                            const effective = getEffectiveStatus(transaction)
+                            const date = transaction.date?.toDate?.() ?? new Date(transaction.date?.seconds * 1000)
+                            const today = new Date()
+                            today.setHours(23, 59, 59, 999)
+
+                            return (
+                                <div
+                                    key={transaction.id}
+                                    className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex flex-col gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
+                                        }`}
+                                >
+                                    {/* Linha principal — ícone + info + valor */}
+                                    <div className="flex items-center gap-3">
+                                        {category ? (
+                                            <div
+                                                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                                                style={{ backgroundColor: category.color + '22' }}
+                                            >
+                                                <CategoryIcon name={category.icon} size={14} />
+                                            </div>
+                                        ) : (
+                                            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
+                                        )}
+
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                                                {transaction.description || '—'}
+                                            </p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                                                {formatDate(transaction.date)} · {getAccountName(transaction.accountId)}
+                                                {transaction.installmentTotal > 1 && (
+                                                    <span className="ml-1">· {transaction.installmentNumber}/{transaction.installmentTotal}x</span>
+                                                )}
+                                            </p>
+                                            {transaction.confirmedAt && transaction.status === 'confirmed' && (
+                                                <p className="text-xs text-green-500 dark:text-green-400 mt-0.5">
+                                                    Pago em: {formatDate(transaction.confirmedAt)}
+                                                </p>
+                                            )}
+                                            {transaction.isHistorical && (
+                                                <span className="inline-block text-xs bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 px-2 py-0.5 rounded-full mt-0.5">
+                                                    Histórico
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <div className="text-right flex-shrink-0">
+                                            <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' :
+                                                    transaction.type === 'expense' ? 'text-red-500' :
+                                                        'text-gray-600 dark:text-gray-400'
+                                                }`}>
+                                                {formatAmount(transaction.amount, transaction.type)}
+                                            </p>
+                                            <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[effective]}`}>
+                                                {STATUS_LABELS[effective]}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Linha de ações */}
+                                    <div className="flex items-center gap-3 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                        {(effective === 'pending' || effective === 'overdue') && date <= today && (
+                                            <button
+                                                onClick={() => confirmTransaction(transaction.id)}
+                                                className="text-xs text-green-500 hover:text-green-700 transition font-medium"
+                                            >
+                                                Confirmar
+                                            </button>
+                                        )}
+                                        {(effective === 'pending' || effective === 'overdue' || effective === 'confirmed') && (
+                                            <button
+                                                onClick={() => cancelTransaction(transaction.id)}
+                                                className="text-xs text-yellow-500 hover:text-yellow-700 transition"
+                                            >
+                                                Cancelar
+                                            </button>
+                                        )}
+                                        {effective === 'cancelled' && (
+                                            <button
+                                                onClick={() => updateTransaction(transaction.id, { status: 'pending' })}
+                                                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 transition"
+                                            >
+                                                Reativar
+                                            </button>
+                                        )}
+                                        <div className="ml-auto flex gap-3">
+                                            <button
+                                                onClick={() => handleEdit(transaction)}
+                                                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={() => setDeleting(transaction)}
+                                                className="text-xs text-red-400 hover:text-red-600 transition"
+                                            >
+                                                Excluir
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
 
                 {showMonthPicker && (
                     <div
                         className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
                         onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}
                     >
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4 mx-4">
                             <div className="flex items-center justify-between">
-                                <button onClick={() => setPickerYear(y => y - 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
+                                <button onClick={() => setPickerYear(y => y - 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{pickerYear}</span>
-                                <button onClick={() => setPickerYear(y => y + 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">→</button>
+                                <button onClick={() => setPickerYear(y => y + 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">→</button>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 {Array.from({ length: 12 }, (_, i) => {
@@ -199,8 +348,8 @@ export default function Transactions() {
                                             key={i}
                                             onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
                                             className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             {label}
@@ -219,203 +368,6 @@ export default function Transactions() {
                                 Ir para o mês atual
                             </button>
                         </div>
-                    </div>
-                )}
-
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-3">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Receitas</p>
-                        <p className="text-sm font-medium text-green-600">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthSummary.income)}
-                        </p>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-3">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Despesas</p>
-                        <p className="text-sm font-medium text-red-500">
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthSummary.expense)}
-                        </p>
-                    </div>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-3">
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Balanço</p>
-                        <p className={`text-sm font-medium ${monthSummary.income - monthSummary.expense >= 0
-                            ? 'text-gray-800 dark:text-gray-100'
-                            : 'text-red-500'
-                            }`}>
-                            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-                                monthSummary.income - monthSummary.expense
-                            )}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex gap-2 mb-6 flex-wrap">
-                    {[
-                        { value: 'all', label: 'Todos' },
-                        { value: 'expense', label: 'Despesas' },
-                        { value: 'income', label: 'Receitas' },
-                        { value: 'transfer', label: 'Transferências' },
-                    ].map(f => (
-                        <button
-                            key={f.value}
-                            onClick={() => setFilterType(f.value)}
-                            className={`text-sm px-4 py-1.5 rounded-xl transition ${filterType === f.value
-                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                }`}
-                        >
-                            {f.label}
-                        </button>
-                    ))}
-
-                    <div className="ml-auto">
-                        <select
-                            value={filterStatus}
-                            onChange={e => setFilterStatus(e.target.value)}
-                            className="text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-1.5 text-gray-600 dark:text-gray-300 outline-none bg-white dark:bg-gray-800"
-                        >
-                            <option value="all">Todos os status</option>
-                            {TRANSACTION_STATUS.map(s => (
-                                <option key={s.value} value={s.value}>{s.label}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {filtered.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 dark:text-gray-500 text-sm">
-                        Nenhum lançamento encontrado.
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        {filtered.map(transaction => {
-                            const category = getCategory(transaction.categoryId)
-                            return (
-                                <div
-                                    key={transaction.id}
-                                    className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-4 min-w-0">
-                                        {category ? (
-                                            <div
-                                                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                                                style={{ backgroundColor: category.color + '22' }}
-                                            >
-                                                <CategoryIcon name={category.icon} size={14} />
-                                            </div>
-                                        ) : (
-                                            <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
-                                        )}
-
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-                                                {transaction.description || '—'}
-                                            </p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                                                {formatDate(transaction.date)} · {getAccountName(transaction.accountId)}
-                                                {transaction.installmentTotal > 1 && (
-                                                    <span className="ml-1">
-                                                        · {transaction.installmentNumber}/{transaction.installmentTotal}x
-                                                    </span>
-                                                )}
-                                            </p>
-                                            {transaction.confirmedAt && transaction.status === 'confirmed' && (
-                                                <p className="text-xs text-green-500 dark:text-green-400 mt-0.5">
-                                                    Pago em: {formatDate(transaction.confirmedAt)}
-                                                </p>
-                                            )}
-
-                                            {transaction.isHistorical && (
-                                                <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 px-2 py-0.5 rounded-full">
-                                                    Histórico
-                                                </span>
-                                            )}
-
-                                            {transaction.tags?.length > 0 && (
-                                                <div className="flex gap-1 mt-1 flex-wrap">
-                                                    {transaction.tags.map(tag => (
-                                                        <span
-                                                            key={tag}
-                                                            className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full"
-                                                        >
-                                                            {tag}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                        <div className="text-right">
-                                            <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' :
-                                                transaction.type === 'expense' ? 'text-red-500' :
-                                                    'text-gray-600 dark:text-gray-400'
-                                                }`}>
-                                                {formatAmount(transaction.amount, transaction.type)}
-                                            </p>
-                                            {(() => {
-                                                const effective = getEffectiveStatus(transaction)
-                                                return (
-                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[effective]}`}>
-                                                        {STATUS_LABELS[effective]}
-                                                    </span>
-                                                )
-                                            })()}
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            {(() => {
-                                                const effective = getEffectiveStatus(transaction)
-                                                const date = transaction.date?.toDate?.() ?? new Date(transaction.date?.seconds * 1000)
-                                                const today = new Date()
-                                                today.setHours(23, 59, 59, 999)
-                                                return (
-                                                    <>
-                                                        {(effective === 'pending' || effective === 'overdue') && date <= today && (
-                                                            <button
-                                                                onClick={() => confirmTransaction(transaction.id)}
-                                                                className="text-xs text-green-500 hover:text-green-700 transition"
-                                                            >
-                                                                Confirmar
-                                                            </button>
-                                                        )}
-                                                        {(effective === 'pending' || effective === 'overdue' || effective === 'confirmed') && (
-                                                            <button
-                                                                onClick={() => cancelTransaction(transaction.id)}
-                                                                className="text-xs text-yellow-500 hover:text-yellow-700 transition"
-                                                            >
-                                                                Cancelar
-                                                            </button>
-                                                        )}
-                                                        {effective === 'cancelled' && (
-                                                            <button
-                                                                onClick={() => updateTransaction(transaction.id, { status: 'pending' })}
-                                                                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition"
-                                                            >
-                                                                Reativar
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => handleEdit(transaction)}
-                                                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                                        >
-                                                            Editar
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setDeleting(transaction)}
-                                                            className="text-xs text-red-400 hover:text-red-600 transition"
-                                                        >
-                                                            Excluir
-                                                        </button>
-                                                    </>
-                                                )
-                                            })()}
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })}
                     </div>
                 )}
 

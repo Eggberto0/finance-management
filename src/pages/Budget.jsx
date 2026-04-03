@@ -6,6 +6,7 @@ import BudgetForm from '../components/BudgetForm'
 import ConfirmModal from '../components/ConfirmModal'
 import { useCategories } from '../hooks/useCategories'
 import { useTransactions } from '../hooks/useTransactions'
+import CategoryIcon from '../components/CategoryIcon'
 
 export default function Budget() {
     const now = new Date()
@@ -37,9 +38,7 @@ export default function Budget() {
 
     function formatMonthLabel(yearMonth) {
         const [year, month] = yearMonth.split('-').map(Number)
-        return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', {
-            month: 'long', year: 'numeric'
-        })
+        return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     }
 
     function fmt(value) {
@@ -90,14 +89,14 @@ export default function Budget() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Orçamento</h2>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 md:gap-3">
                         {budgets.length === 0 && previousBudgets.length > 0 && (
                             <button
                                 onClick={() => copyFromPreviousMonth(previousBudgets)}
-                                className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                                className="text-xs md:text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 px-3 md:px-4 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                             >
                                 Copiar mês anterior
                             </button>
@@ -114,10 +113,7 @@ export default function Budget() {
                         ←
                     </button>
                     <button
-                        onClick={() => {
-                            setPickerYear(parseInt(selectedMonth.split('-')[0]))
-                            setShowMonthPicker(true)
-                        }}
+                        onClick={() => { setPickerYear(parseInt(selectedMonth.split('-')[0])); setShowMonthPicker(true) }}
                         className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize hover:text-gray-900 dark:hover:text-white transition"
                     >
                         {formatMonthLabel(selectedMonth)}
@@ -131,7 +127,7 @@ export default function Budget() {
                 </div>
 
                 {overBudgets.length > 0 && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-5 py-4 mb-6">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-4 md:px-5 py-4 mb-6">
                         <p className="text-sm font-medium text-red-700 dark:text-red-400 mb-1">
                             {overBudgets.length === 1 ? '1 categoria ultrapassou' : `${overBudgets.length} categorias ultrapassaram`} o limite
                         </p>
@@ -160,23 +156,21 @@ export default function Budget() {
                         {budgetsWithSpent.map(budget => (
                             <div
                                 key={budget.id}
-                                className={`bg-white dark:bg-gray-800 border rounded-2xl px-5 py-4 ${budget.isOver
-                                        ? 'border-red-200 dark:border-red-800'
-                                        : 'border-gray-100 dark:border-gray-700'
+                                className={`bg-white dark:bg-gray-800 border rounded-2xl px-4 md:px-5 py-4 ${budget.isOver ? 'border-red-200 dark:border-red-800' : 'border-gray-100 dark:border-gray-700'
                                     }`}
                             >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
+                                <div className="flex items-start justify-between mb-3 gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
                                         {budget.category && (
                                             <div
-                                                className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                                                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                                                 style={{ backgroundColor: budget.category.color + '22' }}
                                             >
-                                                {budget.category.icon}
+                                                <CategoryIcon name={budget.category.icon} size={16} />
                                             </div>
                                         )}
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                                                 {budget.category?.name ?? '—'}
                                             </p>
                                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
@@ -186,27 +180,25 @@ export default function Budget() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4">
-                                        <p className={`text-sm font-medium ${budget.isOver ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                                    <div className="flex items-center gap-3 flex-shrink-0">
+                                        <p className={`text-sm font-medium hidden sm:block ${budget.isOver ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
                                             {budget.isOver
-                                                ? `+${fmt(budget.spent - budget.amount)} acima`
+                                                ? `+${fmt(budget.spent - budget.amount)}`
                                                 : `${fmt(budget.amount - budget.spent)} restante`
                                             }
                                         </p>
-                                        <div className="flex gap-3">
-                                            <button
-                                                onClick={() => handleEdit(budget)}
-                                                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => setConfirming(budget)}
-                                                className="text-xs text-red-400 hover:text-red-600 transition"
-                                            >
-                                                Excluir
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => handleEdit(budget)}
+                                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            onClick={() => setConfirming(budget)}
+                                            className="text-xs text-red-400 hover:text-red-600 transition"
+                                        >
+                                            Excluir
+                                        </button>
                                     </div>
                                 </div>
 
@@ -238,7 +230,7 @@ export default function Budget() {
                         className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
                         onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}
                     >
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4 mx-4">
                             <div className="flex items-center justify-between">
                                 <button onClick={() => setPickerYear(y => y - 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{pickerYear}</span>

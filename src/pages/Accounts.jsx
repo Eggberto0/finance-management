@@ -12,31 +12,33 @@ import { ACCOUNT_TYPES, CURRENCIES } from '../utils/constants'
 function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, getCurrencyLabel, convertToBRL }) {
     const [confirming, setConfirming] = useState(false)
     const balance = calcAccountBalance(account, transactions)
-    const balanceBRL = account.currency !== 'BRL' ? convertToBRL(balance, account.currency) : null
+    const balanceBRL = account.currency !== 'BRL' && account.type !== 'credit'
+        ? convertToBRL(balance, account.currency)
+        : null
 
     return (
         <>
-            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                     <div
                         className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: account.color }}
                     />
-                    <div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{account.name}</p>
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{account.name}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                             {getTypeLabel(account.type)} · {getCurrencyLabel(account.currency)}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="text-right">
                         <p className={`text-sm font-medium ${account.type === 'credit' ? 'text-gray-700 dark:text-gray-300' :
-                            balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
+                                balance < 0 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'
                             }`}>
                             {account.type === 'credit'
-                                ? `Limite disponível: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)}`
+                                ? `Limite: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)}`
                                 : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: account.currency }).format(balance)
                             }
                         </p>
@@ -75,7 +77,7 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
 
 export default function Accounts() {
     const { accounts, loading, addAccount, updateAccount, deleteAccount } = useAccounts()
-    const { convertToBRL, formatRate, loading: ratesLoading } = useExchangeRates()
+    const { convertToBRL, loading: ratesLoading } = useExchangeRates()
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
     const { transactions } = useTransactions()
@@ -111,7 +113,7 @@ export default function Accounts() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Contas</h2>
                     <Button onClick={() => setShowForm(true)}>Nova conta</Button>

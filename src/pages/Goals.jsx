@@ -60,7 +60,7 @@ export default function Goals() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Cofrinhos</h2>
                     <Button onClick={() => setShowForm(true)}>Novo cofrinho</Button>
@@ -82,18 +82,18 @@ export default function Goals() {
                             return (
                                 <div
                                     key={goal.id}
-                                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 flex flex-col gap-4"
+                                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 md:p-5 flex flex-col gap-4"
                                 >
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
                                             <div
-                                                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                                                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                                                 style={{ backgroundColor: goal.color + '22' }}
                                             >
                                                 <CategoryIcon name={goal.icon} size={16} />
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{goal.name}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{goal.name}</p>
                                                 {goal.deadline && (
                                                     <p className={`text-xs mt-0.5 ${isOverdue ? 'text-red-500' :
                                                             daysLeft <= 30 ? 'text-amber-500' :
@@ -110,7 +110,7 @@ export default function Goals() {
                                         </div>
 
                                         {isComplete && (
-                                            <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full">
+                                            <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full flex-shrink-0">
                                                 Completo!
                                             </span>
                                         )}
@@ -145,7 +145,7 @@ export default function Goals() {
                                     </div>
 
                                     {goal.accountId && (
-                                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                                             Vinculado a: {accounts.find(a => a.id === goal.accountId)?.name ?? '—'}
                                         </p>
                                     )}
@@ -161,7 +161,7 @@ export default function Goals() {
                                         )}
                                         <button
                                             onClick={() => handleEdit(goal)}
-                                            className="flex-1 text-xs text-center py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                            className="flex-1 text-xs text-center py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                                         >
                                             Editar
                                         </button>

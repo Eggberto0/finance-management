@@ -52,7 +52,7 @@ function InvoiceView({ card, month, onBack }) {
                 </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-4">
                 <div>
                     <p className="text-xs text-gray-400 dark:text-gray-500 capitalize mb-1">{monthLabel}</p>
                     <p className="text-2xl font-medium text-gray-800 dark:text-gray-100">{fmt(total)}</p>
@@ -62,7 +62,7 @@ function InvoiceView({ card, month, onBack }) {
                     </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={() => setShowForm(true)}>Nova compra</Button>
                     {!isPaid && total > 0 && (
                         <button
@@ -86,13 +86,13 @@ function InvoiceView({ card, month, onBack }) {
                         return (
                             <div
                                 key={transaction.id}
-                                className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 flex items-center justify-between gap-4 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
+                                className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex items-center justify-between gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
                                     }`}
                             >
-                                <div className="flex items-center gap-4 min-w-0">
+                                <div className="flex items-center gap-3 min-w-0">
                                     {category ? (
                                         <div
-                                            className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                                             style={{ backgroundColor: category.color + '22' }}
                                         >
                                             <CategoryIcon name={category.icon} size={14} />
@@ -208,7 +208,7 @@ export default function Cards() {
     if (selectedCard) {
         return (
             <Layout>
-                <div className="w-full px-18 py-8">
+                <div className="w-full px-4 md:px-18 py-6 md:py-8">
                     <InvoiceView
                         card={selectedCard}
                         month={selectedMonth}
@@ -221,10 +221,10 @@ export default function Cards() {
 
     return (
         <Layout>
-            <div className="w-full px-18 py-8">
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-medium text-gray-800 dark:text-gray-100">Cartões</h2>
-                    <Button onClick={() => setShowCardForm(true)}>Novo catão</Button>
+                    <Button onClick={() => setShowCardForm(true)}>Novo cartão</Button>
                 </div>
 
                 <div className="flex items-center justify-between mb-6">
@@ -263,18 +263,18 @@ export default function Cards() {
                             return (
                                 <div
                                     key={card.id}
-                                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 flex flex-col gap-4 hover:border-gray-300 dark:hover:border-gray-500 transition"
+                                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 md:p-5 flex flex-col gap-4 hover:border-gray-300 dark:hover:border-gray-500 transition"
                                 >
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between gap-2">
                                         <button
                                             onClick={() => setSelectedCard(card)}
-                                            className="flex items-center gap-3 flex-1 text-left"
+                                            className="flex items-center gap-3 flex-1 text-left min-w-0"
                                         >
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: card.color }} />
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{card.name}</p>
+                                            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: card.color }} />
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{card.name}</p>
                                         </button>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-xs text-gray-400 dark:text-gray-500">Vence dia {card.dueDay}</span>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">Vence dia {card.dueDay}</span>
                                             <button
                                                 onClick={() => { setEditingCard(card); setShowCardForm(true) }}
                                                 className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
@@ -327,7 +327,7 @@ export default function Cards() {
                         className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
                         onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}
                     >
-                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4 mx-4">
                             <div className="flex items-center justify-between">
                                 <button onClick={() => setPickerYear(y => y - 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-100">{pickerYear}</span>
