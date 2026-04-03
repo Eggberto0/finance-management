@@ -61,7 +61,6 @@ function InvoiceView({ card, month, onBack }) {
                         {isPaid && ' · Paga'}
                     </p>
                 </div>
-
                 <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={() => setShowForm(true)}>Nova compra</Button>
                     {!isPaid && total > 0 && (
@@ -86,10 +85,10 @@ function InvoiceView({ card, month, onBack }) {
                         return (
                             <div
                                 key={transaction.id}
-                                className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex items-center justify-between gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
+                                className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex flex-col gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
                                     }`}
                             >
-                                <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex items-center gap-3">
                                     {category ? (
                                         <div
                                             className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -100,7 +99,7 @@ function InvoiceView({ card, month, onBack }) {
                                     ) : (
                                         <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
                                     )}
-                                    <div className="min-w-0">
+                                    <div className="min-w-0 flex-1">
                                         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                                             {transaction.description || '—'}
                                         </p>
@@ -111,24 +110,22 @@ function InvoiceView({ card, month, onBack }) {
                                             )}
                                         </p>
                                     </div>
+                                    <p className="text-sm font-medium text-red-500 flex-shrink-0">{fmt(transaction.amount)}</p>
                                 </div>
 
-                                <div className="flex items-center gap-3 flex-shrink-0">
-                                    <p className="text-sm font-medium text-red-500">{fmt(transaction.amount)}</p>
-                                    <div className="flex flex-col gap-1">
-                                        <button
-                                            onClick={() => { setEditing(transaction); setShowForm(true) }}
-                                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            onClick={() => setDeleting(transaction)}
-                                            className="text-xs text-red-400 hover:text-red-600 transition"
-                                        >
-                                            Excluir
-                                        </button>
-                                    </div>
+                                <div className="flex items-center gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                    <button
+                                        onClick={() => { setEditing(transaction); setShowForm(true) }}
+                                        className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleting(transaction)}
+                                        className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                                    >
+                                        Excluir
+                                    </button>
                                 </div>
                             </div>
                         )
@@ -228,24 +225,14 @@ export default function Cards() {
                 </div>
 
                 <div className="flex items-center justify-between mb-6">
-                    <button
-                        onClick={() => changeMonth(-1)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                        ←
-                    </button>
+                    <button onClick={() => changeMonth(-1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
                     <button
                         onClick={() => { setPickerYear(parseInt(selectedMonth.split('-')[0])); setShowMonthPicker(true) }}
                         className="text-sm font-medium text-gray-700 dark:text-gray-200 capitalize hover:text-gray-900 dark:hover:text-white transition"
                     >
                         {formatMonthLabel(selectedMonth)}
                     </button>
-                    <button
-                        onClick={() => changeMonth(1)}
-                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                        →
-                    </button>
+                    <button onClick={() => changeMonth(1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">→</button>
                 </div>
 
                 {creditCards.length === 0 ? (
@@ -271,23 +258,11 @@ export default function Cards() {
                                             className="flex items-center gap-3 flex-1 text-left min-w-0"
                                         >
                                             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: card.color }} />
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{card.name}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{card.name}</p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500">Vence dia {card.dueDay}</p>
+                                            </div>
                                         </button>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">Vence dia {card.dueDay}</span>
-                                            <button
-                                                onClick={() => { setEditingCard(card); setShowCardForm(true) }}
-                                                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => setConfirmingDelete(card)}
-                                                className="text-xs text-red-400 hover:text-red-600 transition"
-                                            >
-                                                Excluir
-                                            </button>
-                                        </div>
                                     </div>
 
                                     <button onClick={() => setSelectedCard(card)} className="flex flex-col gap-4 text-left">
@@ -316,6 +291,27 @@ export default function Cards() {
                                             <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{fmt(invoiceTotal)}</p>
                                         </div>
                                     </button>
+
+                                    <div className="flex gap-2 pt-1 border-t border-gray-50 dark:border-gray-700">
+                                        <button
+                                            onClick={() => setSelectedCard(card)}
+                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                        >
+                                            Ver fatura
+                                        </button>
+                                        <button
+                                            onClick={() => { setEditingCard(card); setShowCardForm(true) }}
+                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            onClick={() => setConfirmingDelete(card)}
+                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                                        >
+                                            Excluir
+                                        </button>
+                                    </div>
                                 </div>
                             )
                         })}
