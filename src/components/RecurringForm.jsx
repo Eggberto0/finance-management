@@ -105,8 +105,8 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                                 key={t.value}
                                 onClick={() => handleChange('type', t.value)}
                                 className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                     }`}
                             >
                                 {t.label}
@@ -163,7 +163,7 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                         >
                             <option value="">Sem categoria</option>
                             {filteredCategories.map(c => (
-                                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                                <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
                     </div>

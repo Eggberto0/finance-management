@@ -142,8 +142,8 @@ export default function Transactions() {
                             key={mode.value}
                             onClick={() => setViewMode(mode.value)}
                             className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === mode.value
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400'
+                                ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400'
                                 }`}
                         >
                             {mode.label}
@@ -191,8 +191,8 @@ export default function Transactions() {
                             key={f.value}
                             onClick={() => setFilterType(f.value)}
                             className={`text-xs px-3 py-1.5 rounded-xl transition ${filterType === f.value
-                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                                 }`}
                         >
                             {f.label}
@@ -269,8 +269,8 @@ export default function Transactions() {
 
                                         <div className="text-right flex-shrink-0">
                                             <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' :
-                                                    transaction.type === 'expense' ? 'text-red-500' :
-                                                        'text-gray-600 dark:text-gray-400'
+                                                transaction.type === 'expense' ? 'text-red-500' :
+                                                    'text-gray-600 dark:text-gray-400'
                                                 }`}>
                                                 {formatAmount(transaction.amount, transaction.type)}
                                             </p>
@@ -281,11 +281,11 @@ export default function Transactions() {
                                     </div>
 
                                     {/* Linha de ações */}
-                                    <div className="flex items-center gap-3 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                    <div className="flex items-center gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
                                         {(effective === 'pending' || effective === 'overdue') && date <= today && (
                                             <button
                                                 onClick={() => confirmTransaction(transaction.id)}
-                                                className="text-xs text-green-500 hover:text-green-700 transition font-medium"
+                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium transition hover:bg-green-100"
                                             >
                                                 Confirmar
                                             </button>
@@ -293,7 +293,7 @@ export default function Transactions() {
                                         {(effective === 'pending' || effective === 'overdue' || effective === 'confirmed') && (
                                             <button
                                                 onClick={() => cancelTransaction(transaction.id)}
-                                                className="text-xs text-yellow-500 hover:text-yellow-700 transition"
+                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 transition hover:bg-yellow-100"
                                             >
                                                 Cancelar
                                             </button>
@@ -301,25 +301,23 @@ export default function Transactions() {
                                         {effective === 'cancelled' && (
                                             <button
                                                 onClick={() => updateTransaction(transaction.id, { status: 'pending' })}
-                                                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 transition"
+                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition"
                                             >
                                                 Reativar
                                             </button>
                                         )}
-                                        <div className="ml-auto flex gap-3">
-                                            <button
-                                                onClick={() => handleEdit(transaction)}
-                                                className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => setDeleting(transaction)}
-                                                className="text-xs text-red-400 hover:text-red-600 transition"
-                                            >
-                                                Excluir
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => handleEdit(transaction)}
+                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-400 transition hover:bg-gray-100"
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleting(transaction)}
+                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 transition hover:bg-red-100"
+                                        >
+                                            Excluir
+                                        </button>
                                     </div>
                                 </div>
                             )
@@ -348,8 +346,8 @@ export default function Transactions() {
                                             key={i}
                                             onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
                                             className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             {label}

@@ -301,7 +301,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 >
                                     <option value="">Sem categoria</option>
                                     {filteredCategories.map(c => (
-                                        <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                                        <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
                             </div>
