@@ -46,6 +46,15 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         }
     }, [form.accountId])
 
+    useEffect(() => {
+        if (form.type !== 'expense' && isCredit) {
+            setForm(prev => ({
+                ...prev,
+                accountId: accounts.find(a => a.type !== 'credit')?.id ?? '',
+            }))
+        }
+    }, [form.type])
+
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
     }
@@ -250,7 +259,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                         >
                             <option value="">Selecione...</option>
                             {accounts
-                                .filter(a => a.type !== 'credit')
+                                .filter(a => form.type === 'expense' ? true : a.type !== 'credit')
                                 .map(a => (
                                     <option key={a.id} value={a.id}>{a.name}</option>
                                 ))}
