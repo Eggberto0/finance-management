@@ -40,20 +40,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         if (isCredit) {
             setForm(prev => ({
                 ...prev,
-                paymentMethod: form.installments > 1 ? 'credit_install' : 'credit_single',
+                paymentMethod: prev.installments > 1 ? 'credit_install' : 'credit_single',
                 autoConfirm: true,
             }))
         }
     }, [form.accountId])
-
-    useEffect(() => {
-        if (form.type !== 'expense' && isCredit) {
-            setForm(prev => ({
-                ...prev,
-                accountId: accounts.find(a => a.type !== 'credit')?.id ?? '',
-            }))
-        }
-    }, [form.type])
 
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
@@ -259,14 +250,14 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                         >
                             <option value="">Selecione...</option>
                             {accounts
-                                .filter(a => form.type === 'expense' ? true : a.type !== 'credit')
+                                .filter(a => a.type !== 'credit')
                                 .map(a => (
                                     <option key={a.id} value={a.id}>{a.name}</option>
                                 ))}
                         </select>
                     </div>
 
-                    {!isTransfer && form.type === 'expense' && (
+                    {!isTransfer && form.type === 'expense' && !isCredit && (
                         <div className="flex flex-col gap-1.5">
                             <label className={labelClass}>Meio de pagamento</label>
                             <select

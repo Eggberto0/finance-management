@@ -47,8 +47,6 @@ export const TRANSACTION_STATUS = [
 
 export const PAYMENT_METHODS = [
   { value: 'debit', label: 'Débito' },
-  { value: 'credit_single', label: 'Crédito à vista' },
-  { value: 'credit_install', label: 'Crédito parcelado' },
   { value: 'cash', label: 'Dinheiro' },
   { value: 'pix', label: 'Pix' },
   { value: 'transfer', label: 'Transferência' },
