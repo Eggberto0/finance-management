@@ -135,10 +135,12 @@ function InvoiceView({ card, month, onBack }) {
 
             {showForm && (
                 <TransactionForm
-                    transaction={editing ?? { type: 'expense', accountId: card.id }}
+                    transaction={editing}  // null quando novo, objeto quando editando
                     onClose={() => { setEditing(null); setShowForm(false) }}
                     onAdd={addTransaction}
                     onUpdate={updateTransaction}
+                    cardMode
+                    defaultAccountId={card.id}
                 />
             )}
 
@@ -274,8 +276,8 @@ export default function Cards() {
                                             <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full transition-all ${usagePercent >= 90 ? 'bg-red-500' :
-                                                            usagePercent >= 70 ? 'bg-amber-400' :
-                                                                'bg-green-500'
+                                                        usagePercent >= 70 ? 'bg-amber-400' :
+                                                            'bg-green-500'
                                                         }`}
                                                     style={{ width: `${usagePercent}%` }}
                                                 />
@@ -339,8 +341,8 @@ export default function Cards() {
                                             key={i}
                                             onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
                                             className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             {label}

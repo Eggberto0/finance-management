@@ -5,7 +5,7 @@ import { useCategories } from '../hooks/useCategories'
 import { calcInstallmentDates } from '../utils/creditCardDates'
 import { TRANSACTION_TYPES, TRANSACTION_STATUS, PAYMENT_METHODS } from '../utils/constants'
 
-export default function TransactionForm({ transaction, onClose, onAdd, onUpdate }) {
+export default function TransactionForm({ transaction, onClose, onAdd, onUpdate, cardMode = false, defaultAccountId = '' }) {
     const { accounts } = useAccounts()
     const { categories } = useCategories()
     const isEditing = !!transaction
@@ -19,7 +19,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         date: transaction?.date
             ? (transaction.date.toDate?.() ?? new Date(transaction.date)).toISOString().split('T')[0]
             : today,
-        accountId: transaction?.accountId ?? accounts[0]?.id ?? '',
+        accountId: transaction?.accountId ?? defaultAccountId ?? accounts[0]?.id ?? '',
         transferToAccountId: transaction?.transferToAccountId ?? '',
         categoryId: transaction?.categoryId ?? '',
         tags: transaction?.tags?.join(', ') ?? '',
@@ -46,6 +46,15 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         }
     }, [form.accountId])
 
+    useEffect(() => {
+        if (cardMode) {
+            setForm(prev => ({
+                ...prev,
+                paymentMethod: 'credit_single',
+            }))
+        }
+    }, [cardMode])
+
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
     }
@@ -60,7 +69,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
         const [year, month, day] = form.date.split('-').map(Number)
         const date = new Date(year, month - 1, day, 12, 0, 0)
 
-        const tags = form.tags.split(',').map(t => t.trim()).filter(Boolean)
+        const tags = (form.tags || '').split(',').map(t => t.trim()).filter(Boolean)
 
         const base = {
             type: form.type,
@@ -79,6 +88,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                     : new Date()
                 : null,
             isHistorical: form.isHistorical,
+            ...(transaction?.purchaseDate && { purchaseDate: transaction.purchaseDate }),
         }
 
         if (isEditing) {
@@ -87,7 +97,13 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
             const dateOnly = new Date(year, month - 1, day)
             const updatedStatus =
                 base.status === 'confirmed' && dateOnly > todayDate ? 'pending' : base.status
-            await onUpdate(transaction.id, { ...base, status: updatedStatus })
+
+            const payload = { ...base, status: updatedStatus }
+            console.log('payload:', JSON.stringify(payload, null, 2))
+
+            console.log('transaction.id:', transaction.id)
+            console.log('transaction:', transaction)
+            await onUpdate(transaction.id, payload)
             onClose()
             return
         }
@@ -167,18 +183,20 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
 
                 <div className="flex flex-col gap-4">
                     <div className="flex gap-2">
-                        {TRANSACTION_TYPES.map(t => (
-                            <button
-                                key={t.value}
-                                onClick={() => handleChange('type', t.value)}
-                                className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                    }`}
-                            >
-                                {t.label}
-                            </button>
-                        ))}
+                        {TRANSACTION_TYPES
+                            .filter(t => cardMode ? t.value !== 'transfer' : true)
+                            .map(t => (
+                                <button
+                                    key={t.value}
+                                    onClick={() => handleChange('type', t.value)}
+                                    className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        }`}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -241,23 +259,25 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                         />
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className={labelClass}>Conta</label>
-                        <select
-                            value={form.accountId}
-                            onChange={e => handleChange('accountId', e.target.value)}
-                            className={inputClass}
-                        >
-                            <option value="">Selecione...</option>
-                            {accounts
-                                .filter(a => a.type !== 'credit')
-                                .map(a => (
-                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                ))}
-                        </select>
-                    </div>
+                    {!cardMode && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className={labelClass}>Conta</label>
+                            <select
+                                value={form.accountId}
+                                onChange={e => handleChange('accountId', e.target.value)}
+                                className={inputClass}
+                            >
+                                <option value="">Selecione...</option>
+                                {accounts
+                                    .filter(a => a.type !== 'credit')
+                                    .map(a => (
+                                        <option key={a.id} value={a.id}>{a.name}</option>
+                                    ))}
+                            </select>
+                        </div>
+                    )}
 
-                    {!isTransfer && form.type === 'expense' && !isCredit && (
+                    {!isTransfer && form.type === 'expense' && (
                         <div className="flex flex-col gap-1.5">
                             <label className={labelClass}>Meio de pagamento</label>
                             <select
@@ -265,9 +285,14 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate 
                                 onChange={e => handleChange('paymentMethod', e.target.value)}
                                 className={inputClass}
                             >
-                                {PAYMENT_METHODS.map(p => (
-                                    <option key={p.value} value={p.value}>{p.label}</option>
-                                ))}
+                                {PAYMENT_METHODS
+                                    .filter(p => cardMode
+                                        ? p.value === 'credit_single' || p.value === 'credit_install'
+                                        : p.value !== 'credit_single' && p.value !== 'credit_install'
+                                    )
+                                    .map(p => (
+                                        <option key={p.value} value={p.value}>{p.label}</option>
+                                    ))}
                             </select>
                         </div>
                     )}

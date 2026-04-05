@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { db } from '../services/firebase'
 import {
     collection, addDoc, updateDoc, deleteDoc,
-    doc, onSnapshot, query, orderBy, getDocs, where
+    doc, onSnapshot, query, orderBy, getDocs, where, deleteField
 } from 'firebase/firestore'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -23,9 +23,9 @@ export function useTransactions() {
             const today = new Date()
             today.setHours(0, 0, 0, 0)
 
-            const data = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            const data = snapshot.docs.map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
             }))
 
             const toAutoConfirm = data.filter(t => {
@@ -67,7 +67,10 @@ export function useTransactions() {
     }
 
     async function updateTransaction(id, data) {
-        await updateDoc(doc(db, 'users', user.uid, 'transactions', id), data)
+        const cleaned = Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v])
+        )
+        await updateDoc(doc(db, 'users', user.uid, 'transactions', id), cleaned)
     }
 
     async function deleteTransaction(id) {
