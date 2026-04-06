@@ -3,7 +3,6 @@ import Layout from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { useDashboard } from '../hooks/useDashboard'
 import CategoryIcon from '../components/CategoryIcon'
-import { useOnboarding } from '../hooks/useOnboarding'
 import InvoicePreview from '../components/InvoicePreview'
 import PercentageView from '../components/PercentageView'
 import { calcAccountBalance } from '../utils/calcBalance'
@@ -46,7 +45,6 @@ export default function Dashboard() {
         lastUpdated, goalsSummary, prevTotalExpense, expenseByCategotyPrev,
     } = useDashboard(selectedMonth)
 
-    const { showOnboarding, completeOnboarding } = useOnboarding()
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
     function formatDate(date) {
@@ -77,7 +75,7 @@ export default function Dashboard() {
                                 onClick={() => setViewMode('general')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'general'
                                         ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
                             >
                                 Geral
@@ -86,7 +84,7 @@ export default function Dashboard() {
                                 onClick={() => setViewMode('percentage')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'percentage'
                                         ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
                             >
                                 Percentual
@@ -356,10 +354,6 @@ export default function Dashboard() {
                     </>
                 )}
             </div>
-
-            {showOnboarding && (
-                <OnboardingModal onComplete={completeOnboarding} />
-            )}
         </Layout>
     )
 }
