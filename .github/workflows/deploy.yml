@@ -23,7 +23,7 @@ jobs:
         run: npm install -g vite
 
       - name: Build
-        run: npm run build
+        run: ./node_modules/.bin/vite build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
