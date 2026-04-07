@@ -1,3 +1,4 @@
+import { calcAccountBalance } from '../utils/calcBalance'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
 function fmt(value) {
@@ -37,21 +38,21 @@ export default function PercentageView({
     const accountData = normalAccounts
         .filter(a => a.type !== 'credit')
         .map(a => {
-            const balance = transactions
-                .filter(t => t.accountId === a.id && t.status === 'confirmed' && t.type === 'income')
-                .reduce((sum, t) => sum + t.amount, 0) -
-                transactions
-                    .filter(t => t.accountId === a.id && t.status === 'confirmed' && t.type === 'expense')
-                    .reduce((sum, t) => sum + t.amount, 0) +
-                (a.initialBalance ?? 0)
+            const bal = calcAccountBalance(a, transactions)
             return {
                 name: a.name,
-                value: Math.max(balance, 0),
+                value: Math.max(bal, 0),
                 color: a.color,
-                percentage: pct(Math.max(balance, 0), totalBalance)
             }
         })
         .filter(a => a.value > 0)
+
+    const positiveTotal = accountData.reduce((sum, a) => sum + a.value, 0)
+
+    const accountDataWithPct = accountData.map(a => ({
+        ...a,
+        percentage: pct(a.value, positiveTotal)
+    }))
 
     return (
         <div className="flex flex-col gap-6">
@@ -61,8 +62,8 @@ export default function PercentageView({
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Receitas x Despesas</p>
                     {expenseDiff !== null && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${expenseDiff > 0
-                                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                                : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                            ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                            : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
                             }`}>
                             {expenseDiff > 0 ? '▲' : '▼'} {Math.abs(expenseDiff)}% vs mês anterior
                         </span>
@@ -177,7 +178,7 @@ export default function PercentageView({
                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-5 flex flex-col gap-4">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Distribuição do patrimônio</p>
 
-                    {accountData.length === 0 ? (
+                    {accountDataWithPct.length === 0 ? (
                         <p className="text-sm text-gray-400 dark:text-gray-500">Nenhuma conta com saldo positivo.</p>
                     ) : (
                         <div className="grid grid-cols-2 gap-4 items-center">
@@ -185,7 +186,7 @@ export default function PercentageView({
                                 <ResponsiveContainer width={120} height={120}>
                                     <PieChart>
                                         <Pie
-                                            data={accountData}
+                                            data={accountDataWithPct}
                                             cx="50%"
                                             cy="50%"
                                             innerRadius={35}
@@ -193,7 +194,7 @@ export default function PercentageView({
                                             dataKey="value"
                                             strokeWidth={0}
                                         >
-                                            {accountData.map((entry, i) => (
+                                            {accountDataWithPct.map((entry, i) => (
                                                 <Cell key={i} fill={entry.color} />
                                             ))}
                                         </Pie>
@@ -210,7 +211,7 @@ export default function PercentageView({
                             </div>
 
                             <div className="flex flex-col gap-2">
-                                {accountData.map((acc, i) => (
+                                {accountDataWithPct.map((acc, i) => (
                                     <div key={i} className="flex items-center justify-between gap-2">
                                         <div className="flex items-center gap-1.5 min-w-0">
                                             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: acc.color }} />
