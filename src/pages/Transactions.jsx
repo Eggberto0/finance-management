@@ -249,6 +249,14 @@ export default function Transactions() {
                                             <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
                                                 {transaction.description || '—'}
                                             </p>
+                                            {transaction.originalCurrency && transaction.originalAmount && (
+                                                <p className="text-xs text-blue-400 dark:text-blue-400 mt-0.5">
+                                                    {transaction.originalCurrency} {new Intl.NumberFormat('pt-BR', {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                    }).format(transaction.originalAmount)}
+                                                </p>
+                                            )}
                                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
                                                 {formatDate(transaction.date)} · {getAccountName(transaction.accountId)}
                                                 {transaction.installmentTotal > 1 && (

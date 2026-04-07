@@ -31,6 +31,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
             ? (transaction.confirmedAt.toDate?.() ?? new Date(transaction.confirmedAt)).toISOString().split('T')[0]
             : '',
         isHistorical: transaction?.isHistorical ?? false,
+        originalCurrency: transaction?.originalCurrency ?? '',
+        originalAmount: transaction?.originalAmount ?? '',
     })
 
     const selectedAccount = accounts.find(a => a.id === form.accountId)
@@ -89,6 +91,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                 : null,
             isHistorical: form.isHistorical,
             ...(transaction?.purchaseDate && { purchaseDate: transaction.purchaseDate }),
+            originalCurrency: form.originalCurrency || null,
+            originalAmount: form.originalAmount ? parseFloat(form.originalAmount) : null,
         }
 
         if (isEditing) {
@@ -257,6 +261,35 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                             onChange={e => handleChange('description', e.target.value)}
                             className={inputClass}
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className={labelClass}>Valor em moeda estrangeira (opcional)</label>
+                        <div className="flex gap-2">
+                            <select
+                                value={form.originalCurrency}
+                                onChange={e => handleChange('originalCurrency', e.target.value)}
+                                className={`${inputClass} w-32 flex-shrink-0`}
+                            >
+                                <option value="">—</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="ARS">ARS</option>
+                            </select>
+                            {form.originalCurrency && (
+                                <NumericFormat
+                                    value={form.originalAmount}
+                                    onValueChange={values => handleChange('originalAmount', values.floatValue ?? '')}
+                                    thousandSeparator="."
+                                    decimalSeparator=","
+                                    decimalScale={2}
+                                    fixedDecimalScale
+                                    placeholder="0,00"
+                                    className={`${inputClass} flex-1`}
+                                />
+                            )}
+                        </div>
                     </div>
 
                     {!cardMode && (
