@@ -26,6 +26,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
         status: transaction?.status ?? 'pending',
         autoConfirm: transaction?.autoConfirm ?? false,
         installments: transaction?.installmentTotal ?? 1,
+        installmentAmount: transaction?.amount ?? '',  // valor por parcela
         paymentMethod: transaction?.paymentMethod ?? 'debit',
         confirmedAt: transaction?.confirmedAt
             ? (transaction.confirmedAt.toDate?.() ?? new Date(transaction.confirmedAt)).toISOString().split('T')[0]
@@ -62,20 +63,27 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
     }
 
     const installments = parseInt(form.installments) || 1
-    const totalAmount = parseFloat(form.amount) || 0
-    const installmentAmount = installments > 1 ? totalAmount / installments : totalAmount
+    const isInstallment = form.paymentMethod === 'credit_install' && installments > 1
+
+    // Se parcelado: valor por parcela é form.installmentAmount, total é calculado
+    // Se à vista: form.amount é o valor total
+    const installmentAmount = parseFloat(form.installmentAmount) || 0
+    const totalAmount = isInstallment ? installmentAmount * installments : (parseFloat(form.amount) || 0)
 
     async function handleSubmit() {
-        if (!form.amount || !form.accountId) return
+        if (isInstallment) {
+            if (!form.installmentAmount || !form.accountId) return
+        } else {
+            if (!form.amount || !form.accountId) return
+        }
 
         const [year, month, day] = form.date.split('-').map(Number)
         const date = new Date(year, month - 1, day, 12, 0, 0)
-
         const tags = (form.tags || '').split(',').map(t => t.trim()).filter(Boolean)
 
         const base = {
             type: form.type,
-            amount: parseFloat(form.amount),
+            amount: isInstallment ? installmentAmount : parseFloat(form.amount),
             description: form.description.trim(),
             date,
             accountId: form.accountId,
@@ -101,13 +109,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
             const dateOnly = new Date(year, month - 1, day)
             const updatedStatus =
                 base.status === 'confirmed' && dateOnly > todayDate ? 'pending' : base.status
-
-            const payload = { ...base, status: updatedStatus }
-            console.log('payload:', JSON.stringify(payload, null, 2))
-
-            console.log('transaction.id:', transaction.id)
-            console.log('transaction:', transaction)
-            await onUpdate(transaction.id, payload)
+            await onUpdate(transaction.id, { ...base, status: updatedStatus })
             onClose()
             return
         }
@@ -118,10 +120,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
             return
         }
 
-        if (installments > 1) {
+        if (isInstallment) {
             const installmentId = crypto.randomUUID()
-            const amountPerInstallment = parseFloat((totalAmount / installments).toFixed(2))
-
             let installmentDates
             if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
                 const purchaseDate = new Date(year, month - 1, day)
@@ -140,7 +140,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
 
                 await onAdd({
                     ...base,
-                    amount: amountPerInstallment,
+                    amount: installmentAmount,
                     date: installmentDate,
                     purchaseDate: date,
                     installmentId,
@@ -175,6 +175,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
     const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
     const labelClass = "text-xs text-gray-500 dark:text-gray-400"
 
+    const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+
     return (
         <div
             className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
@@ -194,8 +196,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                                     key={t.value}
                                     onClick={() => handleChange('type', t.value)}
                                     className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                            ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     {t.label}
@@ -203,14 +205,18 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                             ))}
                     </div>
 
+                    {/* Valor — muda conforme parcelado ou não */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
                             <label className={labelClass}>
-                                {installments > 1 ? 'Valor total' : 'Valor'}
+                                {isInstallment ? 'Valor por parcela' : 'Valor'}
                             </label>
                             <NumericFormat
-                                value={form.amount}
-                                onValueChange={values => handleChange('amount', values.floatValue ?? '')}
+                                value={isInstallment ? form.installmentAmount : form.amount}
+                                onValueChange={values => handleChange(
+                                    isInstallment ? 'installmentAmount' : 'amount',
+                                    values.floatValue ?? ''
+                                )}
                                 thousandSeparator="."
                                 decimalSeparator=","
                                 prefix="R$ "
@@ -219,25 +225,19 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                                 placeholder="R$ 0,00"
                                 className={inputClass}
                             />
-                            {installments > 1 && totalAmount > 0 && (
+                            {isInstallment && installmentAmount > 0 && (
                                 <p className="text-xs text-gray-400 dark:text-gray-500">
-                                    {isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay
-                                        ? (() => {
-                                            const [y, m, d] = form.date.split('-').map(Number)
-                                            const dates = calcInstallmentDates(
-                                                new Date(y, m - 1, d),
-                                                selectedAccount.closingDay,
-                                                selectedAccount.dueDay,
-                                                installments
-                                            )
-                                            return `${installments}x de ${new Intl.NumberFormat('pt-BR', {
-                                                style: 'currency', currency: 'BRL'
-                                            }).format(installmentAmount)} · 1ª parcela em ${dates[0].toLocaleDateString('pt-BR')}`
-                                        })()
-                                        : `${installments}x de ${new Intl.NumberFormat('pt-BR', {
-                                            style: 'currency', currency: 'BRL'
-                                        }).format(installmentAmount)}`
-                                    }
+                                    Total: {fmt(totalAmount)}
+                                    {isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay && (() => {
+                                        const [y, m, d] = form.date.split('-').map(Number)
+                                        const dates = calcInstallmentDates(
+                                            new Date(y, m - 1, d),
+                                            selectedAccount.closingDay,
+                                            selectedAccount.dueDay,
+                                            installments
+                                        )
+                                        return ` · 1ª parcela em ${dates[0].toLocaleDateString('pt-BR')}`
+                                    })()}
                                 </p>
                             )}
                         </div>
@@ -428,6 +428,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                         />
                         <span className="text-sm text-gray-600 dark:text-gray-300">Confirmar automaticamente na data</span>
                     </label>
+
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input
                             type="checkbox"
