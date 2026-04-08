@@ -38,12 +38,14 @@ export default function Dashboard() {
     const [period, setPeriod] = useState('month')
     const [viewMode, setViewMode] = useState('general')
 
+    const periodMonths = period === 'quarter' ? 3 : period === 'half' ? 6 : period === 'year' ? 12 : 1
+
     const {
         normalAccounts, benefitAccounts, transactions, totalBalance,
         totalIncome, totalExpense, expenseByCategory, upcomingTransactions,
         creditCardAlerts, budgetAlerts, overdueTransactions, invoicePreview,
         lastUpdated, goalsSummary, prevTotalExpense, expenseByCategotyPrev,
-    } = useDashboard(selectedMonth)
+    } = useDashboard(selectedMonth, period)
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
@@ -74,8 +76,8 @@ export default function Dashboard() {
                             <button
                                 onClick={() => setViewMode('general')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'general'
-                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
                             >
                                 Geral
@@ -83,8 +85,8 @@ export default function Dashboard() {
                             <button
                                 onClick={() => setViewMode('percentage')}
                                 className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'percentage'
-                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                     }`}
                             >
                                 Percentual
@@ -96,8 +98,8 @@ export default function Dashboard() {
                                     key={p.value}
                                     onClick={() => setPeriod(p.value)}
                                     className={`text-xs px-2 md:px-3 py-1.5 rounded-lg transition ${period === p.value
-                                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                         }`}
                                 >
                                     {p.label}
@@ -122,12 +124,16 @@ export default function Dashboard() {
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Receitas</p>
                         <p className="text-xl md:text-2xl font-medium text-green-600">{fmt(totalIncome)}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">confirmadas no mês</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            {period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}
+                        </p>
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Despesas</p>
                         <p className="text-xl md:text-2xl font-medium text-red-500">{fmt(totalExpense)}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">confirmadas no mês</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            {period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}
+                        </p>
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Balanço</p>
@@ -288,23 +294,12 @@ export default function Dashboard() {
                                 ) : (
                                     <div className="flex flex-col gap-3">
                                         {expenseByCategory.map(({ categoryId, amount, category }) => (
-                                            <div key={categoryId} className="flex flex-col gap-1.5">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <CategoryIcon name={category.icon} size={14} />
-                                                        <span className="text-xs text-gray-600 dark:text-gray-400">{category.name}</span>
-                                                    </div>
-                                                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{fmt(amount)}</span>
+                                            <div key={categoryId} className="flex items-center justify-between py-1.5 border-b border-gray-50 dark:border-gray-700 last:border-0">
+                                                <div className="flex items-center gap-2">
+                                                    <CategoryIcon name={category.icon} size={14} />
+                                                    <span className="text-xs text-gray-600 dark:text-gray-400">{category.name}</span>
                                                 </div>
-                                                <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full rounded-full"
-                                                        style={{
-                                                            width: `${(amount / maxCategoryAmount) * 100}%`,
-                                                            backgroundColor: category.color
-                                                        }}
-                                                    />
-                                                </div>
+                                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{fmt(amount)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -315,18 +310,15 @@ export default function Dashboard() {
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Próximos lançamentos</p>
                                 {creditCardAlerts.length > 0 && (
                                     <div className="flex flex-col gap-2">
-                                        {creditCardAlerts.map(({ account, balance, daysUntilDue }) => {
-                                            const used = (account.creditLimit ?? 0) - balance
-                                            return (
-                                                <div key={account.id} className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">
-                                                    <div>
-                                                        <p className="text-xs font-medium text-red-700 dark:text-red-400">Fatura {account.name}</p>
-                                                        <p className="text-xs text-red-500 dark:text-red-400">{daysLabel(daysUntilDue)}</p>
-                                                    </div>
-                                                    <span className="text-xs font-medium text-red-700 dark:text-red-400">{fmt(used)}</span>
+                                        {creditCardAlerts.map(({ account, invoiceTotal, daysUntilDue }) => (
+                                            <div key={account.id} className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 rounded-xl px-3 py-2">
+                                                <div>
+                                                    <p className="text-xs font-medium text-red-700 dark:text-red-400">Fatura {account.name}</p>
+                                                    <p className="text-xs text-red-500 dark:text-red-400">{daysLabel(daysUntilDue)}</p>
                                                 </div>
-                                            )
-                                        })}
+                                                <span className="text-xs font-medium text-red-700 dark:text-red-400">{fmt(invoiceTotal)}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                                 {upcomingTransactions.length === 0 && creditCardAlerts.length === 0 ? (
