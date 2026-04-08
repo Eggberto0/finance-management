@@ -116,8 +116,6 @@ Os dados são protegidos por regras do Firestore que garantem que cada usuário 
 - [ ] Importação de extratos OFX/CSV
 - [ ] Módulo de investimentos
 - [ ] Anexar comprovantes nos lançamentos
-- [ ] PWA — instalação como app no celular
-- [ ] Lançamentos históricos retroativos
 
 ---
 
