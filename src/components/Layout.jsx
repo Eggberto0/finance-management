@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { useAuth } from '../contexts/AuthContext'
-import { useOnboarding } from '../hooks/useOnboarding'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import ConfirmModal from '../components/ConfirmModal'
+import { useOnboarding } from '../hooks/useOnboarding'
 import OnboardingModal from '../components/OnboardingModal'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import {
     LayoutDashboard, CreditCard, Wallet, ArrowLeftRight,
     RefreshCw, PiggyBank, Calculator, Tag, BookOpen, LogOut, Trash2, Menu, X
@@ -62,6 +63,7 @@ export default function Layout({ children }) {
     const [menuOpen, setMenuOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const menuRef = useRef(null)
+    const { settings, updateSettings } = useSettingsContext()
 
     useEffect(() => {
         function handleClick(e) {
@@ -155,6 +157,20 @@ export default function Layout({ children }) {
                                     </div>
                                 </div>
 
+                                <div className="w-full px-4 py-2 flex flex-col gap-2">
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">Moeda padrão</span>
+                                    <select
+                                        value={settings.defaultCurrency}
+                                        onChange={e => updateSettings({ defaultCurrency: e.target.value })}
+                                        className="text-sm border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-1.5 text-gray-600 dark:text-gray-300 outline-none bg-white dark:bg-gray-700"
+                                    >
+                                        <option value="BRL">🇧🇷 Real (BRL)</option>
+                                        <option value="USD">🇺🇸 Dólar (USD)</option>
+                                        <option value="EUR">🇪🇺 Euro (EUR)</option>
+                                        <option value="GBP">🇬🇧 Libra (GBP)</option>
+                                    </select>
+                                </div>
+
                                 <button
                                     onClick={() => { restartOnboarding(); setMenuOpen(false) }}
                                     className="w-full text-left px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center gap-3"
@@ -197,8 +213,8 @@ export default function Layout({ children }) {
                                 key={item.to}
                                 to={item.to}
                                 className={`flex items-center gap-1.5 text-sm py-3 border-b-2 transition ${isActive
-                                        ? 'border-b-2 font-medium'
-                                        : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
+                                    ? 'border-b-2 font-medium'
+                                    : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
                                     }`}
                                 style={isActive ? { color: 'var(--accent)', borderBottomColor: 'var(--accent)' } : {}}
                             >
@@ -225,8 +241,8 @@ export default function Layout({ children }) {
                                     key={item.to}
                                     to={item.to}
                                     className={`flex items-center gap-3 px-6 py-3 text-sm transition ${isActive
-                                            ? 'font-medium'
-                                            : 'text-gray-500 dark:text-gray-400'
+                                        ? 'font-medium'
+                                        : 'text-gray-500 dark:text-gray-400'
                                         }`}
                                     style={isActive ? { color: 'var(--accent)' } : {}}
                                 >

@@ -77,7 +77,7 @@ function AccountCard({ account, transactions, onEdit, onDelete, getTypeLabel, ge
 
 export default function Accounts() {
     const { accounts, loading, addAccount, updateAccount, deleteAccount } = useAccounts()
-    const { convertToBRL } = useExchangeRates()
+    const { convert: convertToBRL } = useExchangeRates()
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
     const { transactions } = useTransactions()

@@ -6,7 +6,8 @@ import CategoryIcon from '../components/CategoryIcon'
 import InvoicePreview from '../components/InvoicePreview'
 import PercentageView from '../components/PercentageView'
 import { calcAccountBalance } from '../utils/calcBalance'
-import OnboardingModal from '../components/OnboardingModal'
+import { useExchangeRates } from '../hooks/useExchangeRates'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import { useGenerateBudgets } from '../hooks/useGenerateBudgets'
 import { useGenerateInstances } from '../hooks/useGenerateInstances'
 
@@ -16,10 +17,6 @@ const PERIOD_OPTIONS = [
     { value: 'half', label: '6 meses' },
     { value: 'year', label: 'Ano' },
 ]
-
-function fmt(value, currency = 'BRL') {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value)
-}
 
 function daysLabel(days) {
     if (days === 0) return 'Hoje'
@@ -49,9 +46,21 @@ export default function Dashboard() {
 
     const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
+    const { convert } = useExchangeRates()
+
     function formatDate(date) {
         const d = date?.toDate?.() ?? new Date(date?.seconds * 1000)
         return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    }
+
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+
+    function fmt(value, currency) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: currency ?? defaultCurrency
+        }).format(value)
     }
 
     function getDaysUntil(date) {

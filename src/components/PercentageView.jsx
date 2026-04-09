@@ -1,9 +1,6 @@
 import { calcAccountBalance } from '../utils/calcBalance'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
-
-function fmt(value) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-}
 
 function pct(value, total) {
     if (!total) return 0
@@ -20,6 +17,13 @@ export default function PercentageView({
     totalBalance,
     transactions,
 }) {
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+
+    function fmt(value) {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: defaultCurrency }).format(value)
+    }
+
     const balance = totalIncome - totalExpense
     const expenseRatio = pct(totalExpense, totalIncome)
     const savingsRatio = pct(balance, totalIncome)
@@ -62,8 +66,8 @@ export default function PercentageView({
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Receitas x Despesas</p>
                     {expenseDiff !== null && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${expenseDiff > 0
-                            ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                            : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                                : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
                             }`}>
                             {expenseDiff > 0 ? '▲' : '▼'} {Math.abs(expenseDiff)}% vs mês anterior
                         </span>
@@ -138,11 +142,7 @@ export default function PercentageView({
                                         </Pie>
                                         <Tooltip
                                             formatter={(value) => fmt(value)}
-                                            contentStyle={{
-                                                borderRadius: 8,
-                                                border: 'none',
-                                                fontSize: 12,
-                                            }}
+                                            contentStyle={{ borderRadius: 8, border: 'none', fontSize: 12 }}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -200,11 +200,7 @@ export default function PercentageView({
                                         </Pie>
                                         <Tooltip
                                             formatter={(value) => fmt(value)}
-                                            contentStyle={{
-                                                borderRadius: 8,
-                                                border: 'none',
-                                                fontSize: 12,
-                                            }}
+                                            contentStyle={{ borderRadius: 8, border: 'none', fontSize: 12 }}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
