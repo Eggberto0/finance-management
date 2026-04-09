@@ -143,7 +143,7 @@ export default function Transactions() {
                             onClick={() => setViewMode(mode.value)}
                             className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === mode.value
                                 ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                : 'text-gray-500 dark:text-gray-400'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                 }`}
                         >
                             {mode.label}
@@ -192,7 +192,7 @@ export default function Transactions() {
                             onClick={() => setFilterType(f.value)}
                             className={`text-xs px-3 py-1.5 rounded-xl transition ${filterType === f.value
                                 ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                 }`}
                         >
                             {f.label}
@@ -290,14 +290,15 @@ export default function Transactions() {
 
                                     {/* Linha de ações */}
                                     <div className="flex items-center gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
-                                        {(effective === 'pending' || effective === 'overdue') && date <= today && (
-                                            <button
-                                                onClick={() => confirmTransaction(transaction.id)}
-                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium transition hover:bg-green-100"
-                                            >
-                                                Confirmar
-                                            </button>
-                                        )}
+                                        {(effective === 'pending' || effective === 'overdue') &&
+                                            (!transaction.autoConfirm || date <= today) && (
+                                                <button
+                                                    onClick={() => confirmTransaction(transaction.id)}
+                                                    className="flex-1 text-xs text-center py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium transition hover:bg-green-100"
+                                                >
+                                                    Confirmar
+                                                </button>
+                                            )}
                                         {(effective === 'pending' || effective === 'overdue' || effective === 'confirmed') && (
                                             <button
                                                 onClick={() => cancelTransaction(transaction.id)}

@@ -7,20 +7,7 @@ export function calcAccountBalance(account, transactions) {
     const confirmed = transactions.filter(t => {
         if (t.status !== 'confirmed') return false
         if (t.isHistorical) return false
-
-        let date
-        if (t.date?.toDate) {
-            date = t.date.toDate()
-        } else if (t.date?.seconds) {
-            date = new Date(t.date.seconds * 1000)
-        } else {
-            date = new Date(t.date)
-        }
-
-        const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
-        return dateOnly <= todayOnly
+        return true
     })
 
 

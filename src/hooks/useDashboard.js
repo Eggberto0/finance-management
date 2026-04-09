@@ -6,6 +6,7 @@ import { useCategories } from './useCategories'
 import { useTransactions } from './useTransactions'
 import { useExchangeRates } from './useExchangeRates'
 import { calcAccountBalance } from '../utils/calcBalance'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import { buildInvoicePreview } from '../utils/creditCardInvoice'
 
 export function useDashboard(selectedMonth, period = 'month') {
@@ -13,8 +14,10 @@ export function useDashboard(selectedMonth, period = 'month') {
     const { transactions } = useTransactions()
     const { categories } = useCategories()
     const [year, month] = selectedMonth.split('-').map(Number)
-    const { convertToBRL, rates, lastUpdated } = useExchangeRates()
+    const { convert, rates, lastUpdated } = useExchangeRates()
     const { budgets } = useBudgets(`${year}-${String(month).padStart(2, '0')}`)
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
 
     const periodMonths = period === 'quarter' ? 3 : period === 'half' ? 6 : period === 'year' ? 12 : 1
 
@@ -124,11 +127,9 @@ export function useDashboard(selectedMonth, period = 'month') {
             .filter(a => a.type !== 'credit')
             .reduce((sum, a) => {
                 const balance = calcAccountBalance(a, transactions)
-                if (a.currency === 'BRL') return sum + balance
-                const converted = convertToBRL(balance, a.currency)
-                return sum + (converted ?? balance)
+                return sum + balance
             }, 0),
-        [normalAccounts, transactions, rates]
+        [normalAccounts, transactions]
     )
 
     const expenseByCategory = useMemo(() => {

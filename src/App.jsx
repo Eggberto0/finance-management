@@ -10,6 +10,7 @@ import Categories from './pages/Categories'
 import Transactions from './pages/Transactions'
 import PrivateRoute from './components/PrivateRoute'
 import { AuthProvider } from './contexts/AuthContext'
+import { SettingsProvider } from './contexts/SettingsContext'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 function AppRoutes() {
@@ -33,7 +34,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <SettingsProvider>
+          <AppRoutes />
+        </SettingsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

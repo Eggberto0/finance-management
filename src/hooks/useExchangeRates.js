@@ -53,11 +53,22 @@ export function useExchangeRates() {
         return () => clearInterval(interval)
     }, [])
 
-    function convertToBRL(amount, currency) {
-        if (currency === 'BRL') return amount
-        const rate = rates[currency]
-        if (!rate) return null
-        return amount * rate
+    function convert(amount, fromCurrency, toCurrency) {
+        if (fromCurrency === toCurrency) return amount
+
+        // Converte para BRL primeiro, depois para moeda destino
+        let amountInBRL = amount
+        if (fromCurrency !== 'BRL') {
+            const rate = rates[fromCurrency]
+            if (!rate) return null
+            amountInBRL = amount * rate
+        }
+
+        if (toCurrency === 'BRL') return amountInBRL
+
+        const targetRate = rates[toCurrency]
+        if (!targetRate) return null
+        return amountInBRL / targetRate
     }
 
     function formatRate(currency) {
@@ -69,5 +80,5 @@ export function useExchangeRates() {
         }).format(rate)
     }
 
-    return { rates, loading, lastUpdated, convertToBRL, formatRate }
+    return { rates, loading, lastUpdated, convert, formatRate }
 }
