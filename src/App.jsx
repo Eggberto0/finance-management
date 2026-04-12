@@ -10,6 +10,7 @@ import Categories from './pages/Categories'
 import Transactions from './pages/Transactions'
 import PrivateRoute from './components/PrivateRoute'
 import { AuthProvider } from './contexts/AuthContext'
+import { SpinnerProvider } from './contexts/SpinnerContext'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
@@ -35,7 +36,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <SettingsProvider>
-          <AppRoutes />
+          <SpinnerProvider>
+            <AppRoutes />
+          </SpinnerProvider>
         </SettingsProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { calcInstallmentDates } from '../utils/creditCardDates'
 import { useSettingsContext } from '../contexts/SettingsContext'
 import { TRANSACTION_TYPES, TRANSACTION_STATUS, PAYMENT_METHODS } from '../utils/constants'
@@ -17,6 +18,7 @@ export default function TransactionForm({
     const { accounts } = useAccounts()
     const { categories } = useCategories()
     const isEditing = !!transaction
+    const { withSpinner } = useSpinner()
 
     const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
 
@@ -89,100 +91,102 @@ export default function TransactionForm({
     const totalAmount = isInstallment ? installmentAmount * installments : (parseFloat(form.amount) || 0)
 
     async function handleSubmit() {
-        if (isInstallment) {
-            if (!form.installmentAmount || !form.accountId) return
-        } else {
-            if (!form.amount || !form.accountId) return
-        }
-
-        const [year, month, day] = form.date.split('-').map(Number)
-        const date = new Date(year, month - 1, day, 12, 0, 0)
-        const tags = (form.tags || '').split(',').map(t => t.trim()).filter(Boolean)
-
-        const base = {
-            type: form.type,
-            amount: isInstallment ? installmentAmount : parseFloat(form.amount),
-            description: form.description.trim(),
-            date,
-            accountId: form.accountId,
-            categoryId: form.categoryId || null,
-            tags,
-            status: form.status,
-            autoConfirm: form.autoConfirm,
-            paymentMethod: form.paymentMethod,
-            confirmedAt: form.status === 'confirmed'
-                ? form.confirmedAt
-                    ? (() => { const [y, m, d] = form.confirmedAt.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
-                    : new Date()
-                : null,
-            isHistorical: form.isHistorical,
-            ...(transaction?.purchaseDate && { purchaseDate: transaction.purchaseDate }),
-            originalCurrency: form.originalCurrency || null,
-            originalAmount: form.originalAmount ? parseFloat(form.originalAmount) : null,
-        }
-
-        if (isEditing) {
-            const todayDate = new Date()
-            todayDate.setHours(23, 59, 59, 999)
-            const dateOnly = new Date(year, month - 1, day)
-            const updatedStatus =
-                base.status === 'confirmed' && dateOnly > todayDate ? 'pending' : base.status
-            await onUpdate(transaction.id, { ...base, status: updatedStatus })
-            onClose()
-            return
-        }
-
-        if (form.type === 'transfer') {
-            await onAdd({ ...base, transferToAccountId: form.transferToAccountId })
-            onClose()
-            return
-        }
-
-        if (isInstallment) {
-            const installmentId = crypto.randomUUID()
-            let installmentDates
-            if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
-                const purchaseDate = new Date(year, month - 1, day)
-                installmentDates = calcInstallmentDates(
-                    purchaseDate,
-                    selectedAccount.closingDay,
-                    selectedAccount.dueDay,
-                    installments
-                )
-            }
-
-            for (let i = 0; i < installments; i++) {
-                const installmentDate = installmentDates
-                    ? installmentDates[i]
-                    : new Date(year, month - 1 + i, day, 12, 0, 0)
-
-                await onAdd({
-                    ...base,
-                    amount: installmentAmount,
-                    date: installmentDate,
-                    purchaseDate: date,
-                    installmentId,
-                    installmentNumber: i + 1,
-                    installmentTotal: installments,
-                    description: `${base.description} (${i + 1}/${installments})`,
-                })
-            }
-        } else {
-            if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
-                const purchaseDate = new Date(year, month - 1, day)
-                const dueDates = calcInstallmentDates(
-                    purchaseDate,
-                    selectedAccount.closingDay,
-                    selectedAccount.dueDay,
-                    1
-                )
-                await onAdd({ ...base, date: dueDates[0], purchaseDate: date })
+        await withSpinner(async () => {
+            if (isInstallment) {
+                if (!form.installmentAmount || !form.accountId) return
             } else {
-                await onAdd(base)
+                if (!form.amount || !form.accountId) return
             }
-        }
 
-        onClose()
+            const [year, month, day] = form.date.split('-').map(Number)
+            const date = new Date(year, month - 1, day, 12, 0, 0)
+            const tags = (form.tags || '').split(',').map(t => t.trim()).filter(Boolean)
+
+            const base = {
+                type: form.type,
+                amount: isInstallment ? installmentAmount : parseFloat(form.amount),
+                description: form.description.trim(),
+                date,
+                accountId: form.accountId,
+                categoryId: form.categoryId || null,
+                tags,
+                status: form.status,
+                autoConfirm: form.autoConfirm,
+                paymentMethod: form.paymentMethod,
+                confirmedAt: form.status === 'confirmed'
+                    ? form.confirmedAt
+                        ? (() => { const [y, m, d] = form.confirmedAt.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
+                        : new Date()
+                    : null,
+                isHistorical: form.isHistorical,
+                ...(transaction?.purchaseDate && { purchaseDate: transaction.purchaseDate }),
+                originalCurrency: form.originalCurrency || null,
+                originalAmount: form.originalAmount ? parseFloat(form.originalAmount) : null,
+            }
+
+            if (isEditing) {
+                const todayDate = new Date()
+                todayDate.setHours(23, 59, 59, 999)
+                const dateOnly = new Date(year, month - 1, day)
+                const updatedStatus =
+                    base.status === 'confirmed' && dateOnly > todayDate ? 'pending' : base.status
+                await onUpdate(transaction.id, { ...base, status: updatedStatus })
+                onClose()
+                return
+            }
+
+            if (form.type === 'transfer') {
+                await onAdd({ ...base, transferToAccountId: form.transferToAccountId })
+                onClose()
+                return
+            }
+
+            if (isInstallment) {
+                const installmentId = crypto.randomUUID()
+                let installmentDates
+                if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
+                    const purchaseDate = new Date(year, month - 1, day)
+                    installmentDates = calcInstallmentDates(
+                        purchaseDate,
+                        selectedAccount.closingDay,
+                        selectedAccount.dueDay,
+                        installments
+                    )
+                }
+
+                for (let i = 0; i < installments; i++) {
+                    const installmentDate = installmentDates
+                        ? installmentDates[i]
+                        : new Date(year, month - 1 + i, day, 12, 0, 0)
+
+                    await onAdd({
+                        ...base,
+                        amount: installmentAmount,
+                        date: installmentDate,
+                        purchaseDate: date,
+                        installmentId,
+                        installmentNumber: i + 1,
+                        installmentTotal: installments,
+                        description: `${base.description} (${i + 1}/${installments})`,
+                    })
+                }
+            } else {
+                if (isCredit && selectedAccount?.closingDay && selectedAccount?.dueDay) {
+                    const purchaseDate = new Date(year, month - 1, day)
+                    const dueDates = calcInstallmentDates(
+                        purchaseDate,
+                        selectedAccount.closingDay,
+                        selectedAccount.dueDay,
+                        1
+                    )
+                    await onAdd({ ...base, date: dueDates[0], purchaseDate: date })
+                } else {
+                    await onAdd(base)
+                }
+            }
+
+            onClose()
+        })
     }
 
     const isTransfer = form.type === 'transfer'

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { useSettingsContext } from '../contexts/SettingsContext'
 import {
     TRANSACTION_TYPES, DAY_RULE_TYPES,
@@ -12,6 +13,7 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
     const { accounts } = useAccounts()
     const { categories } = useCategories()
     const isEditing = !!rule
+    const { withSpinner } = useSpinner()
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -56,39 +58,41 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
     }
 
     async function handleSubmit() {
-        if (!form.baseAmount || !form.accountId || !form.description.trim()) return
+        await withSpinner(async () => {
+            if (!form.baseAmount || !form.accountId || !form.description.trim()) return
 
-        const [sy, sm, sd] = form.startDate.split('-').map(Number)
+            const [sy, sm, sd] = form.startDate.split('-').map(Number)
 
-        const data = {
-            type: form.type,
-            baseAmount: parseFloat(form.baseAmount),
-            description: form.description.trim(),
-            accountId: form.accountId,
-            categoryId: form.categoryId || null,
-            tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
-            autoConfirm: form.autoConfirm,
-            active: form.active,
-            startDate: new Date(sy, sm - 1, sd, 12, 0, 0),
-            endDate: form.endDate
-                ? (() => { const [y, m, d] = form.endDate.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
-                : null,
-            dayRule: {
-                type: form.dayRuleType,
-                day: parseInt(form.dayRuleDay),
-                weekday: parseInt(form.dayRuleWeekday),
-                fallback: form.dayRuleFallback,
-            },
-            currency: form.currency,
-        }
+            const data = {
+                type: form.type,
+                baseAmount: parseFloat(form.baseAmount),
+                description: form.description.trim(),
+                accountId: form.accountId,
+                categoryId: form.categoryId || null,
+                tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+                autoConfirm: form.autoConfirm,
+                active: form.active,
+                startDate: new Date(sy, sm - 1, sd, 12, 0, 0),
+                endDate: form.endDate
+                    ? (() => { const [y, m, d] = form.endDate.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
+                    : null,
+                dayRule: {
+                    type: form.dayRuleType,
+                    day: parseInt(form.dayRuleDay),
+                    weekday: parseInt(form.dayRuleWeekday),
+                    fallback: form.dayRuleFallback,
+                },
+                currency: form.currency,
+            }
 
-        if (isEditing) {
-            await onUpdate(rule.id, data)
-        } else {
-            await onAdd(data)
-        }
+            if (isEditing) {
+                await onUpdate(rule.id, data)
+            } else {
+                await onAdd(data)
+            }
 
-        onClose()
+            onClose()
+        })
     }
 
     const filteredCategories = categories.filter(c =>

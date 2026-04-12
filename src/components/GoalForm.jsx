@@ -2,6 +2,7 @@ import { useState } from 'react'
 import CategoryIcon from './CategoryIcon'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { useSettingsContext } from '../contexts/SettingsContext'
 
 const GOAL_ICONS = [
@@ -26,6 +27,7 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
     const { settings } = useSettingsContext()
     const defaultCurrency = settings.defaultCurrency ?? 'BRL'
     const isEditing = !!goal
+    const { withSpinner } = useSpinner()
 
     const [form, setForm] = useState({
         name: goal?.name ?? '',
@@ -47,28 +49,30 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
     }
 
     async function handleSubmit() {
-        if (!form.name.trim() || !form.targetAmount) return
+        await withSpinner(async () => {
+            if (!form.name.trim() || !form.targetAmount) return
 
-        const data = {
-            name: form.name.trim(),
-            targetAmount: parseFloat(form.targetAmount),
-            currentAmount: parseFloat(form.currentAmount) || 0,
-            currency: form.currency,
-            deadline: form.deadline
-                ? (() => { const [y, m, d] = form.deadline.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
-                : null,
-            accountId: form.accountId || null,
-            color: form.color,
-            icon: form.icon,
-        }
+            const data = {
+                name: form.name.trim(),
+                targetAmount: parseFloat(form.targetAmount),
+                currentAmount: parseFloat(form.currentAmount) || 0,
+                currency: form.currency,
+                deadline: form.deadline
+                    ? (() => { const [y, m, d] = form.deadline.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
+                    : null,
+                accountId: form.accountId || null,
+                color: form.color,
+                icon: form.icon,
+            }
 
-        if (isEditing) {
-            await onUpdate(goal.id, data)
-        } else {
-            await onAdd(data)
-        }
+            if (isEditing) {
+                await onUpdate(goal.id, data)
+            } else {
+                await onAdd(data)
+            }
 
-        onClose()
+            onClose()
+        })
     }
 
     const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
@@ -93,8 +97,8 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
                                     key={icon}
                                     onClick={() => handleChange('icon', icon)}
                                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition ${form.icon === icon
-                                            ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     <CategoryIcon name={icon} size={16} />

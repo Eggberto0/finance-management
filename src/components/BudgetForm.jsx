@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { useSettingsContext } from '../contexts/SettingsContext'
 
 const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
@@ -11,6 +12,7 @@ export default function BudgetForm({ budget, onClose, onAdd, onUpdate, existingC
     const defaultCurrency = settings.defaultCurrency ?? 'BRL'
     const currencySymbol = CURRENCY_SYMBOLS[defaultCurrency] ?? defaultCurrency
     const isEditing = !!budget
+    const { withSpinner } = useSpinner()
 
     const [form, setForm] = useState({
         categoryId: budget?.categoryId ?? '',
@@ -23,18 +25,20 @@ export default function BudgetForm({ budget, onClose, onAdd, onUpdate, existingC
     }
 
     async function handleSubmit() {
-        if (!form.categoryId || !form.amount) return
-        const data = {
-            categoryId: form.categoryId,
-            amount: parseFloat(form.amount),
-            repeat: form.repeat,
-        }
-        if (isEditing) {
-            await onUpdate(budget.id, data)
-        } else {
-            await onAdd(data)
-        }
-        onClose()
+        await withSpinner(async () => {
+            if (!form.categoryId || !form.amount) return
+            const data = {
+                categoryId: form.categoryId,
+                amount: parseFloat(form.amount),
+                repeat: form.repeat,
+            }
+            if (isEditing) {
+                await onUpdate(budget.id, data)
+            } else {
+                await onAdd(data)
+            }
+            onClose()
+        })
     }
 
     const availableCategories = categories.filter(c =>

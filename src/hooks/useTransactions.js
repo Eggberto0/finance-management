@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { db } from '../services/firebase'
+import { useSpinner } from '../contexts/SpinnerContext'
 import {
     collection, addDoc, updateDoc, deleteDoc,
     doc, onSnapshot, query, orderBy, getDocs, where, deleteField
@@ -10,6 +11,7 @@ export function useTransactions() {
     const { user } = useAuth()
     const [transactions, setTransactions] = useState([])
     const [loading, setLoading] = useState(true)
+    const { withSpinner } = useSpinner()
 
     useEffect(() => {
         if (!user) return
@@ -78,15 +80,19 @@ export function useTransactions() {
     }
 
     async function confirmTransaction(id) {
-        await updateDoc(doc(db, 'users', user.uid, 'transactions', id), {
-            status: 'confirmed',
-            confirmedAt: new Date()
+        await withSpinner(async () => {
+            await updateDoc(doc(db, 'users', user.uid, 'transactions', id), {
+                status: 'confirmed',
+                confirmedAt: new Date()
+            })
         })
     }
 
     async function cancelTransaction(id) {
-        await updateDoc(doc(db, 'users', user.uid, 'transactions', id), {
-            status: 'cancelled'
+        await withSpinner(async () => {
+            await updateDoc(doc(db, 'users', user.uid, 'transactions', id), {
+                status: 'cancelled'
+            })
         })
     }
 
