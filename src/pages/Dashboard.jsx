@@ -229,7 +229,7 @@ export default function Dashboard() {
                             </div>
                         )}
 
-                        <InvoicePreview invoicePreview={invoicePreview} />
+                        <InvoicePreview invoicePreview={invoicePreview} accounts={normalAccounts} />
 
                         {goalsSummary.length > 0 && (
                             <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
@@ -252,7 +252,7 @@ export default function Dashboard() {
                                             </div>
                                             <p className="text-xs text-gray-400 dark:text-gray-500">
                                                 {Math.round(goal.percentage)}% · {new Intl.NumberFormat('pt-BR', {
-                                                    style: 'currency', currency: 'BRL'
+                                                    style: 'currency', currency: goal.currency ?? 'BRL'
                                                 }).format(goal.current)}
                                             </p>
                                         </div>
