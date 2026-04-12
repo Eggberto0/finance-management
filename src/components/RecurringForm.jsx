@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import {
     TRANSACTION_TYPES, DAY_RULE_TYPES,
     WEEKDAYS, BUSINESS_DAY_FALLBACK
@@ -13,6 +14,9 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
     const isEditing = !!rule
 
     const today = new Date().toISOString().split('T')[0]
+
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
 
     const [form, setForm] = useState({
         type: rule?.type ?? 'expense',
@@ -33,7 +37,19 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
         dayRuleDay: rule?.dayRule?.day ?? 1,
         dayRuleWeekday: rule?.dayRule?.weekday ?? 1,
         dayRuleFallback: rule?.dayRule?.fallback ?? 'before',
+        currency: rule?.currency ?? defaultCurrency,
     })
+
+    const selectedAccount = accounts.find(a => a.id === form.accountId)
+    const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
+    const currencySymbol = CURRENCY_SYMBOLS[form.currency] ?? 'R$'
+
+    useEffect(() => {
+        if (!rule) {
+            const account = accounts.find(a => a.id === form.accountId)
+            if (account) handleChange('currency', account.currency ?? 'BRL')
+        }
+    }, [form.accountId])
 
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
@@ -62,7 +78,8 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                 day: parseInt(form.dayRuleDay),
                 weekday: parseInt(form.dayRuleWeekday),
                 fallback: form.dayRuleFallback,
-            }
+            },
+            currency: form.currency,
         }
 
         if (isEditing) {
@@ -132,12 +149,27 @@ export default function RecurringForm({ rule, onClose, onAdd, onUpdate }) {
                             onValueChange={values => handleChange('baseAmount', values.floatValue ?? '')}
                             thousandSeparator="."
                             decimalSeparator=","
-                            prefix="R$ "
+                            prefix={`${currencySymbol} `}
+                            placeholder={`${currencySymbol} 0,00`}
                             decimalScale={2}
                             fixedDecimalScale
-                            placeholder="R$ 0,00"
                             className={inputClass}
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className={labelClass}>Moeda</label>
+                        <select
+                            value={form.currency}
+                            onChange={e => handleChange('currency', e.target.value)}
+                            className={inputClass}
+                        >
+                            <option value="BRL">R$ Real (BRL)</option>
+                            <option value="USD">US$ Dólar (USD)</option>
+                            <option value="EUR">€ Euro (EUR)</option>
+                            <option value="GBP">£ Libra (GBP)</option>
+                            <option value="ARS">$ Peso (ARS)</option>
+                        </select>
                     </div>
 
                     <div className="flex flex-col gap-1.5">

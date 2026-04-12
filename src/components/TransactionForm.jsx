@@ -3,12 +3,22 @@ import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
 import { calcInstallmentDates } from '../utils/creditCardDates'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import { TRANSACTION_TYPES, TRANSACTION_STATUS, PAYMENT_METHODS } from '../utils/constants'
 
-export default function TransactionForm({ transaction, onClose, onAdd, onUpdate, cardMode = false, defaultAccountId = '' }) {
+export default function TransactionForm({
+    transaction,
+    onClose,
+    onAdd,
+    onUpdate,
+    cardMode = false,
+    defaultAccountId = '',
+    cardCurrency }) {
     const { accounts } = useAccounts()
     const { categories } = useCategories()
     const isEditing = !!transaction
+
+    const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -38,6 +48,14 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
 
     const selectedAccount = accounts.find(a => a.id === form.accountId)
     const isCredit = selectedAccount?.type === 'credit'
+
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+
+    const activeCurrency = cardMode && cardCurrency
+        ? cardCurrency
+        : selectedAccount?.currency ?? defaultCurrency
+    const currencySymbol = CURRENCY_SYMBOLS[activeCurrency] ?? activeCurrency
 
     useEffect(() => {
         if (isCredit) {
@@ -175,7 +193,7 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
     const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
     const labelClass = "text-xs text-gray-500 dark:text-gray-400"
 
-    const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
+    const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: activeCurrency }).format(v)
 
     return (
         <div
@@ -196,8 +214,8 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                                     key={t.value}
                                     onClick={() => handleChange('type', t.value)}
                                     className={`flex-1 py-2 rounded-xl text-sm transition ${form.type === t.value
-                                            ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     {t.label}
@@ -219,10 +237,10 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                                 )}
                                 thousandSeparator="."
                                 decimalSeparator=","
-                                prefix="R$ "
+                                prefix={`${currencySymbol} `}
+                                placeholder={`${currencySymbol} 0,00`}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                placeholder="R$ 0,00"
                                 className={inputClass}
                             />
                             {isInstallment && installmentAmount > 0 && (
@@ -272,10 +290,11 @@ export default function TransactionForm({ transaction, onClose, onAdd, onUpdate,
                                 className={`${inputClass} w-32 flex-shrink-0`}
                             >
                                 <option value="">—</option>
-                                <option value="USD">USD</option>
-                                <option value="EUR">EUR</option>
-                                <option value="GBP">GBP</option>
-                                <option value="ARS">ARS</option>
+                                {['BRL', 'USD', 'EUR', 'GBP', 'ARS']
+                                    .filter(c => c !== activeCurrency)
+                                    .map(c => (
+                                        <option key={c} value={c}>{c}</option>
+                                    ))}
                             </select>
                             {form.originalCurrency && (
                                 <NumericFormat

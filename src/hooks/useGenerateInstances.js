@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useAccounts } from './useAccounts'
 import { useRecurring } from './useRecurring'
 import { useAuth } from '../contexts/AuthContext'
 import { generateInstancesForMonth } from '../utils/generateInstances'
@@ -6,6 +7,7 @@ import { generateInstancesForMonth } from '../utils/generateInstances'
 export function useGenerateInstances() {
     const { user } = useAuth()
     const { rules, loading } = useRecurring()
+    const { accounts } = useAccounts()
 
     useEffect(() => {
         if (!user || loading || rules.length === 0) return
@@ -14,6 +16,6 @@ export function useGenerateInstances() {
         const year = now.getFullYear()
         const month = now.getMonth() + 1
 
-        generateInstancesForMonth(user.uid, rules, year, month)
-    }, [user, loading, rules])
+        generateInstancesForMonth(user.uid, rules, year, month, accounts)
+    }, [user, loading, rules, accounts])
 }

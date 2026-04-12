@@ -1,8 +1,9 @@
-import { calcRuleDate } from './businessDays'
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore'
 import { db } from '../services/firebase'
+import { calcRuleDate } from './businessDays'
+import { calcInstallmentDates } from './creditCardDates'
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore'
 
-export async function generateInstancesForMonth(userId, rules, year, month) {
+export async function generateInstancesForMonth(userId, rules, year, month, accounts = []) {
     for (const rule of rules) {
         if (!rule.active) continue
 
@@ -28,8 +29,14 @@ export async function generateInstancesForMonth(userId, rules, year, month) {
 
         if (!existing.empty) continue
 
-        const date = calcRuleDate(rule, year, month)
+        let date = calcRuleDate(rule, year, month)
         if (!date) continue
+
+        const account = accounts.find(a => a.id === rule.accountId)
+        if (account?.type === 'credit' && account?.closingDay && account?.dueDay) {
+            const dates = calcInstallmentDates(date, account.closingDay, account.dueDay, 1)
+            date = dates[0]
+        }
 
         const today = new Date()
         today.setHours(23, 59, 59, 999)

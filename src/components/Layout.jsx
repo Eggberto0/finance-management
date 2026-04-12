@@ -168,6 +168,7 @@ export default function Layout({ children }) {
                                         <option value="USD">🇺🇸 Dólar (USD)</option>
                                         <option value="EUR">🇪🇺 Euro (EUR)</option>
                                         <option value="GBP">🇬🇧 Libra (GBP)</option>
+                                        <option value="ARS">🇦🇷 Peso (ARS)</option>
                                     </select>
                                 </div>
 

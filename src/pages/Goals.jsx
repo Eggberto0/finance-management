@@ -10,8 +10,8 @@ import { calcAccountBalance } from '../utils/calcBalance'
 import { useTransactions } from '../hooks/useTransactions'
 import ContributionModal from '../components/ContributionModal'
 
-function fmt(value) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+function fmtGoal(value, currency = 'BRL') {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value)
 }
 
 export default function Goals() {
@@ -96,8 +96,8 @@ export default function Goals() {
                                                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{goal.name}</p>
                                                 {goal.deadline && (
                                                     <p className={`text-xs mt-0.5 ${isOverdue ? 'text-red-500' :
-                                                            daysLeft <= 30 ? 'text-amber-500' :
-                                                                'text-gray-400 dark:text-gray-500'
+                                                        daysLeft <= 30 ? 'text-amber-500' :
+                                                            'text-gray-400 dark:text-gray-500'
                                                         }`}>
                                                         {isOverdue
                                                             ? `Venceu há ${Math.abs(daysLeft)} dias`
@@ -118,8 +118,8 @@ export default function Goals() {
 
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex justify-between items-baseline">
-                                            <p className="text-lg font-medium text-gray-800 dark:text-gray-100">{fmt(current)}</p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500">de {fmt(goal.targetAmount)}</p>
+                                            <p className="text-lg font-medium text-gray-800 dark:text-gray-100">{fmtGoal(current, goal.currency ?? 'BRL')}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">de {fmtGoal(goal.targetAmount, goal.currency ?? 'BRL')}</p>
                                         </div>
 
                                         <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -138,7 +138,7 @@ export default function Goals() {
                                             </span>
                                             {!isComplete && (
                                                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                    Faltam {fmt(goal.targetAmount - current)}
+                                                    Faltam {fmtGoal(goal.targetAmount - current, goal.currency ?? 'BRL')}
                                                 </span>
                                             )}
                                         </div>

@@ -7,6 +7,7 @@ import { useCategories } from '../hooks/useCategories'
 import { TRANSACTION_STATUS } from '../utils/constants'
 import { useTransactions } from '../hooks/useTransactions'
 import TransactionForm from '../components/TransactionForm'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import DeleteTransactionModal from '../components/DeleteTransactionModal'
 
 const STATUS_STYLES = {
@@ -27,18 +28,41 @@ export default function Transactions() {
     const { transactions, loading, addTransaction, updateTransaction, deleteTransaction, confirmTransaction, cancelTransaction, deleteInstallments } = useTransactions()
     const { accounts } = useAccounts()
     const { categories } = useCategories()
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+
     const [editing, setEditing] = useState(null)
     const [deleting, setDeleting] = useState(null)
     const [showForm, setShowForm] = useState(false)
     const [viewMode, setViewMode] = useState('all')
     const [filterType, setFilterType] = useState('all')
     const [filterStatus, setFilterStatus] = useState('all')
+    const [filterAccountId, setFilterAccountId] = useState('all')
+    const [showCreditCard, setShowCreditCard] = useState(false)
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const now = new Date()
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
     })
     const [showMonthPicker, setShowMonthPicker] = useState(false)
     const [pickerYear, setPickerYear] = useState(() => new Date().getFullYear())
+
+    const creditAccountIds = accounts.filter(a => a.type === 'credit').map(a => a.id)
+
+    function getAccountCurrency(accountId) {
+        return accounts.find(a => a.id === accountId)?.currency ?? defaultCurrency
+    }
+
+    function formatAmount(amount, type, accountId) {
+        const currency = getAccountCurrency(accountId)
+        const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(Math.abs(amount))
+        if (type === 'income') return `+${formatted}`
+        if (type === 'expense') return `-${formatted}`
+        return formatted
+    }
+
+    function fmt(value) {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: defaultCurrency }).format(value)
+    }
 
     function changeMonth(direction) {
         const [year, month] = selectedMonth.split('-').map(Number)
@@ -51,34 +75,14 @@ export default function Transactions() {
         return new Date(year, month - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     }
 
-    function handleEdit(transaction) {
-        setEditing(transaction)
-        setShowForm(true)
-    }
-
-    function handleClose() {
-        setEditing(null)
-        setShowForm(false)
-    }
-
-    function getAccountName(id) {
-        return accounts.find(a => a.id === id)?.name ?? '—'
-    }
-
-    function getCategory(id) {
-        return categories.find(c => c.id === id)
-    }
+    function handleEdit(transaction) { setEditing(transaction); setShowForm(true) }
+    function handleClose() { setEditing(null); setShowForm(false) }
+    function getAccountName(id) { return accounts.find(a => a.id === id)?.name ?? '—' }
+    function getCategory(id) { return categories.find(c => c.id === id) }
 
     function formatDate(date) {
         const d = date?.toDate?.() ?? new Date(date)
         return d.toLocaleDateString('pt-BR')
-    }
-
-    function formatAmount(amount, type) {
-        const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(amount))
-        if (type === 'income') return `+${formatted}`
-        if (type === 'expense') return `-${formatted}`
-        return formatted
     }
 
     function getEffectiveStatus(transaction) {
@@ -91,24 +95,22 @@ export default function Transactions() {
         return 'pending'
     }
 
+    const benefitAccountIds = accounts.filter(a => a.type === 'benefit').map(a => a.id)
+
     const filtered = transactions.filter(t => {
         const date = t.date?.toDate?.() ?? new Date(t.date?.seconds * 1000)
         const dateMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
         if (dateMonth !== selectedMonth) return false
+        if (!showCreditCard && creditAccountIds.includes(t.accountId)) return false
         if (filterType !== 'all' && t.type !== filterType) return false
         if (filterStatus !== 'all' && t.status !== filterStatus) return false
+        if (filterAccountId !== 'all' && t.accountId !== filterAccountId) return false
+        if (viewMode === 'patrimony' && benefitAccountIds.includes(t.accountId)) return false
+        if (viewMode === 'benefits' && !benefitAccountIds.includes(t.accountId)) return false
         return true
     })
 
-    const benefitAccountIds = accounts.filter(a => a.type === 'benefit').map(a => a.id)
-
-    const filteredForSummary = filtered.filter(t => {
-        if (viewMode === 'patrimony') return !benefitAccountIds.includes(t.accountId)
-        if (viewMode === 'benefits') return benefitAccountIds.includes(t.accountId)
-        return true
-    })
-
-    const monthSummary = filteredForSummary.reduce((acc, t) => {
+    const monthSummary = filtered.reduce((acc, t) => {
         if (t.status === 'cancelled') return acc
         if (t.type === 'income') acc.income += t.amount
         if (t.type === 'expense') acc.expense += t.amount
@@ -172,9 +174,7 @@ export default function Transactions() {
                     ].map(item => (
                         <div key={item.label} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-3 md:px-4 py-3">
                             <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{item.label}</p>
-                            <p className={`text-xs md:text-sm font-medium ${item.color}`}>
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
-                            </p>
+                            <p className={`text-xs md:text-sm font-medium ${item.color}`}>{fmt(item.value)}</p>
                         </div>
                     ))}
                 </div>
@@ -198,6 +198,30 @@ export default function Transactions() {
                             {f.label}
                         </button>
                     ))}
+
+                    {/* Filtro por conta */}
+                    <select
+                        value={filterAccountId}
+                        onChange={e => setFilterAccountId(e.target.value)}
+                        className="text-xs border border-gray-200 dark:border-gray-600 rounded-xl px-2 py-1.5 text-gray-600 dark:text-gray-300 outline-none bg-white dark:bg-gray-800"
+                    >
+                        <option value="all">Todas as contas</option>
+                        {accounts.filter(a => a.type !== 'credit').map(a => (
+                            <option key={a.id} value={a.id}>{a.name}</option>
+                        ))}
+                    </select>
+
+                    {/* Toggle cartão de crédito */}
+                    <button
+                        onClick={() => setShowCreditCard(v => !v)}
+                        className={`text-xs px-3 py-1.5 rounded-xl transition ${showCreditCard
+                            ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                            }`}
+                    >
+                        💳 Cartão
+                    </button>
+
                     <div className="ml-auto">
                         <select
                             value={filterStatus}
@@ -229,16 +253,11 @@ export default function Transactions() {
                             return (
                                 <div
                                     key={transaction.id}
-                                    className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex flex-col gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''
-                                        }`}
+                                    className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-4 flex flex-col gap-3 ${transaction.status === 'cancelled' ? 'opacity-50' : ''}`}
                                 >
-                                    {/* Linha principal — ícone + info + valor */}
                                     <div className="flex items-center gap-3">
                                         {category ? (
-                                            <div
-                                                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                                                style={{ backgroundColor: category.color + '22' }}
-                                            >
+                                            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: category.color + '22' }}>
                                                 <CategoryIcon name={category.icon} size={14} />
                                             </div>
                                         ) : (
@@ -250,11 +269,8 @@ export default function Transactions() {
                                                 {transaction.description || '—'}
                                             </p>
                                             {transaction.originalCurrency && transaction.originalAmount && (
-                                                <p className="text-xs text-blue-400 dark:text-blue-400 mt-0.5">
-                                                    {transaction.originalCurrency} {new Intl.NumberFormat('pt-BR', {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2
-                                                    }).format(transaction.originalAmount)}
+                                                <p className="text-xs text-blue-400 mt-0.5">
+                                                    {transaction.originalCurrency} {new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(transaction.originalAmount)}
                                                 </p>
                                             )}
                                             <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
@@ -276,11 +292,8 @@ export default function Transactions() {
                                         </div>
 
                                         <div className="text-right flex-shrink-0">
-                                            <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' :
-                                                transaction.type === 'expense' ? 'text-red-500' :
-                                                    'text-gray-600 dark:text-gray-400'
-                                                }`}>
-                                                {formatAmount(transaction.amount, transaction.type)}
+                                            <p className={`text-sm font-medium ${transaction.type === 'income' ? 'text-green-600' : transaction.type === 'expense' ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'}`}>
+                                                {formatAmount(transaction.amount, transaction.type, transaction.accountId)}
                                             </p>
                                             <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLES[effective]}`}>
                                                 {STATUS_LABELS[effective]}
@@ -288,43 +301,26 @@ export default function Transactions() {
                                         </div>
                                     </div>
 
-                                    {/* Linha de ações */}
                                     <div className="flex items-center gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
-                                        {(effective === 'pending' || effective === 'overdue') &&
-                                            (!transaction.autoConfirm || date <= today) && (
-                                                <button
-                                                    onClick={() => confirmTransaction(transaction.id)}
-                                                    className="flex-1 text-xs text-center py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium transition hover:bg-green-100"
-                                                >
-                                                    Confirmar
-                                                </button>
-                                            )}
+                                        {(effective === 'pending' || effective === 'overdue') && (!transaction.autoConfirm || date <= today) && (
+                                            <button onClick={() => confirmTransaction(transaction.id)} className="flex-1 text-xs text-center py-2 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-medium transition hover:bg-green-100">
+                                                Confirmar
+                                            </button>
+                                        )}
                                         {(effective === 'pending' || effective === 'overdue' || effective === 'confirmed') && (
-                                            <button
-                                                onClick={() => cancelTransaction(transaction.id)}
-                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 transition hover:bg-yellow-100"
-                                            >
+                                            <button onClick={() => cancelTransaction(transaction.id)} className="flex-1 text-xs text-center py-2 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 transition hover:bg-yellow-100">
                                                 Cancelar
                                             </button>
                                         )}
                                         {effective === 'cancelled' && (
-                                            <button
-                                                onClick={() => updateTransaction(transaction.id, { status: 'pending' })}
-                                                className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition"
-                                            >
+                                            <button onClick={() => updateTransaction(transaction.id, { status: 'pending' })} className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 transition">
                                                 Reativar
                                             </button>
                                         )}
-                                        <button
-                                            onClick={() => handleEdit(transaction)}
-                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-400 transition hover:bg-gray-100"
-                                        >
+                                        <button onClick={() => handleEdit(transaction)} className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 transition hover:bg-gray-100">
                                             Editar
                                         </button>
-                                        <button
-                                            onClick={() => setDeleting(transaction)}
-                                            className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 transition hover:bg-red-100"
-                                        >
+                                        <button onClick={() => setDeleting(transaction)} className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 transition hover:bg-red-100">
                                             Excluir
                                         </button>
                                     </div>
@@ -335,10 +331,7 @@ export default function Transactions() {
                 )}
 
                 {showMonthPicker && (
-                    <div
-                        className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-                        onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}
-                    >
+                    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onClick={e => e.target === e.currentTarget && setShowMonthPicker(false)}>
                         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 w-72 flex flex-col gap-4 mx-4">
                             <div className="flex items-center justify-between">
                                 <button onClick={() => setPickerYear(y => y - 1)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">←</button>
@@ -351,25 +344,15 @@ export default function Transactions() {
                                     const isSelected = monthValue === selectedMonth
                                     const label = new Date(pickerYear, i, 1).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
                                     return (
-                                        <button
-                                            key={i}
-                                            onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
-                                            className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                                }`}
-                                        >
+                                        <button key={i} onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
+                                            className={`py-2 rounded-xl text-sm capitalize transition ${isSelected ? 'bg-gray-900 dark:bg-gray-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                                             {label}
                                         </button>
                                     )
                                 })}
                             </div>
                             <button
-                                onClick={() => {
-                                    const now = new Date()
-                                    setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
-                                    setShowMonthPicker(false)
-                                }}
+                                onClick={() => { const now = new Date(); setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`); setShowMonthPicker(false) }}
                                 className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition text-center"
                             >
                                 Ir para o mês atual
@@ -379,21 +362,11 @@ export default function Transactions() {
                 )}
 
                 {deleting && (
-                    <DeleteTransactionModal
-                        transaction={deleting}
-                        onClose={() => setDeleting(null)}
-                        onDelete={deleteTransaction}
-                        onDeleteAll={deleteInstallments}
-                    />
+                    <DeleteTransactionModal transaction={deleting} onClose={() => setDeleting(null)} onDelete={deleteTransaction} onDeleteAll={deleteInstallments} />
                 )}
 
                 {showForm && (
-                    <TransactionForm
-                        transaction={editing}
-                        onClose={handleClose}
-                        onAdd={addTransaction}
-                        onUpdate={updateTransaction}
-                    />
+                    <TransactionForm transaction={editing} onClose={handleClose} onAdd={addTransaction} onUpdate={updateTransaction} />
                 )}
             </div>
         </Layout>
