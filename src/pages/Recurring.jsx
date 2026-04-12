@@ -22,6 +22,8 @@ function dayRuleLabel(dayRule) {
     return '—'
 }
 
+const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
+
 export default function Recurring() {
     const { rules, loading, addRule, updateRule, deleteRule } = useRecurring()
     const { accounts } = useAccounts()
@@ -30,22 +32,19 @@ export default function Recurring() {
     const [editing, setEditing] = useState(null)
     const [confirming, setConfirming] = useState(null)
 
-    function handleEdit(rule) {
-        setEditing(rule)
-        setShowForm(true)
+    function handleEdit(rule) { setEditing(rule); setShowForm(true) }
+    function handleClose() { setEditing(null); setShowForm(false) }
+    function getAccountName(id) { return accounts.find(a => a.id === id)?.name ?? '—' }
+    function getCategory(id) { return categories.find(c => c.id === id) }
+
+    function getAccountCurrency(accountId) {
+        const account = accounts.find(a => a.id === accountId)
+        return account?.currency ?? 'BRL'
     }
 
-    function handleClose() {
-        setEditing(null)
-        setShowForm(false)
-    }
-
-    function getAccountName(id) {
-        return accounts.find(a => a.id === id)?.name ?? '—'
-    }
-
-    function getCategory(id) {
-        return categories.find(c => c.id === id)
+    function fmt(amount, accountId) {
+        const currency = getAccountCurrency(accountId)
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(amount)
     }
 
     const incomeRules = rules.filter(r => r.type === 'income')
@@ -54,45 +53,40 @@ export default function Recurring() {
     function RuleCard({ rule }) {
         const category = getCategory(rule.categoryId)
         return (
-            <div className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4 flex items-center justify-between gap-3 ${!rule.active ? 'opacity-50' : ''}`}>
+            <div className={`bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4 flex flex-col gap-3 ${!rule.active ? 'opacity-50' : ''}`}>
                 <div className="flex items-center gap-3 min-w-0">
                     {category ? (
-                        <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: category.color + '22' }}
-                        >
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: category.color + '22' }}>
                             <CategoryIcon name={category.icon} size={14} />
                         </div>
                     ) : (
                         <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0" />
                     )}
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{rule.description}</p>
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
                             {getAccountName(rule.accountId)} · {dayRuleLabel(rule.dayRule)}
                             {!rule.active && ' · Inativa'}
                         </p>
                     </div>
+                    <p className={`text-sm font-medium flex-shrink-0 ${rule.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
+                        {fmt(rule.baseAmount, rule.accountId)}
+                    </p>
                 </div>
 
-                <div className="flex items-center gap-3 flex-shrink-0">
-                    <p className={`text-sm font-medium ${rule.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(rule.baseAmount)}
-                    </p>
-                    <div className="flex gap-2 md:gap-3">
-                        <button
-                            onClick={() => handleEdit(rule)}
-                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                        >
-                            Editar
-                        </button>
-                        <button
-                            onClick={() => setConfirming(rule)}
-                            className="text-xs text-red-400 hover:text-red-600 transition"
-                        >
-                            Excluir
-                        </button>
-                    </div>
+                <div className="flex gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
+                    <button
+                        onClick={() => handleEdit(rule)}
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                    >
+                        Editar
+                    </button>
+                    <button
+                        onClick={() => setConfirming(rule)}
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                    >
+                        Excluir
+                    </button>
                 </div>
             </div>
         )

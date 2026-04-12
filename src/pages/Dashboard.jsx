@@ -163,6 +163,8 @@ export default function Dashboard() {
                         normalAccounts={normalAccounts}
                         totalBalance={totalBalance}
                         transactions={transactions}
+                        convert={convert}
+                        defaultCurrency={defaultCurrency}
                     />
                 ) : (
                     <>

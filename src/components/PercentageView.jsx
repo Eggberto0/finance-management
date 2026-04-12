@@ -16,9 +16,9 @@ export default function PercentageView({
     normalAccounts,
     totalBalance,
     transactions,
+    convert,
+    defaultCurrency,
 }) {
-    const { settings } = useSettingsContext()
-    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
 
     function fmt(value) {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: defaultCurrency }).format(value)
@@ -43,9 +43,14 @@ export default function PercentageView({
         .filter(a => a.type !== 'credit')
         .map(a => {
             const bal = calcAccountBalance(a, transactions)
+            const converted = a.currency === defaultCurrency
+                ? bal
+                : (convert?.(bal, a.currency, defaultCurrency) ?? bal)
             return {
                 name: a.name,
-                value: Math.max(bal, 0),
+                value: Math.max(converted, 0), // usado para o gráfico e percentual
+                originalValue: Math.max(bal, 0), // usado para exibição
+                originalCurrency: a.currency,
                 color: a.color,
             }
         })
@@ -66,8 +71,8 @@ export default function PercentageView({
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Receitas x Despesas</p>
                     {expenseDiff !== null && (
                         <span className={`text-xs px-2 py-0.5 rounded-full ${expenseDiff > 0
-                                ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
-                                : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                            ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                            : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
                             }`}>
                             {expenseDiff > 0 ? '▲' : '▼'} {Math.abs(expenseDiff)}% vs mês anterior
                         </span>
@@ -141,7 +146,16 @@ export default function PercentageView({
                                             ))}
                                         </Pie>
                                         <Tooltip
-                                            formatter={(value) => fmt(value)}
+                                            formatter={(value, name, props) => {
+                                                const acc = accountDataWithPct.find(a => a.name === name)
+                                                if (acc && acc.originalCurrency !== defaultCurrency) {
+                                                    return new Intl.NumberFormat('pt-BR', {
+                                                        style: 'currency',
+                                                        currency: acc.originalCurrency
+                                                    }).format(acc.originalValue)
+                                                }
+                                                return fmt(value)
+                                            }}
                                             contentStyle={{ borderRadius: 8, border: 'none', fontSize: 12 }}
                                         />
                                     </PieChart>
@@ -199,7 +213,16 @@ export default function PercentageView({
                                             ))}
                                         </Pie>
                                         <Tooltip
-                                            formatter={(value) => fmt(value)}
+                                            formatter={(value, name, props) => {
+                                                const acc = accountDataWithPct.find(a => a.name === name)
+                                                if (acc && acc.originalCurrency !== defaultCurrency) {
+                                                    return new Intl.NumberFormat('pt-BR', {
+                                                        style: 'currency',
+                                                        currency: acc.originalCurrency
+                                                    }).format(acc.originalValue)
+                                                }
+                                                return fmt(value)
+                                            }}
                                             contentStyle={{ borderRadius: 8, border: 'none', fontSize: 12 }}
                                         />
                                     </PieChart>

@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
+import { useSettingsContext } from '../contexts/SettingsContext'
 import { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLORS } from '../utils/constants'
 
 export default function AccountForm({ account, onClose, onAdd, onUpdate, excludeTypes = [] }) {
+    const { settings } = useSettingsContext()
     const { accounts } = useAccounts()
     const isEditing = !!account
     const availableTypes = ACCOUNT_TYPES.filter(t => !excludeTypes.includes(t.value))
@@ -11,7 +13,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
     const [form, setForm] = useState({
         name: account?.name ?? '',
         type: account?.type ?? availableTypes[0]?.value ?? 'checking',
-        currency: account?.currency ?? 'BRL',
+        currency: account?.currency ?? settings.defaultCurrency ?? 'BRL',
         initialBalance: account?.initialBalance ?? '',
         creditLimit: account?.creditLimit ?? '',
         closingDay: account?.closingDay ?? '',
@@ -22,6 +24,17 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
 
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
+    }
+
+    function getCurrencySymbol(currency) {
+        const symbols = {
+            BRL: 'R$',
+            USD: '$',
+            EUR: '€',
+            GBP: '£',
+            ARS: '$',
+        }
+        return symbols[currency] ?? currency
     }
 
     async function handleSubmit() {
@@ -115,10 +128,10 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
                                 onValueChange={values => handleChange('initialBalance', values.floatValue ?? '')}
                                 thousandSeparator="."
                                 decimalSeparator=","
-                                prefix="R$ "
+                                prefix={`${getCurrencySymbol(form.currency)} `}
+                                placeholder={`${getCurrencySymbol(form.currency)} 0,00`}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                placeholder="R$ 0,00"
                                 className={inputClass}
                             />
                         </div>
@@ -133,10 +146,10 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
                                     onValueChange={values => handleChange('creditLimit', values.floatValue ?? '')}
                                     thousandSeparator="."
                                     decimalSeparator=","
-                                    prefix="R$ "
+                                    prefix={`${getCurrencySymbol(form.currency)} `}
+                                    placeholder={`${getCurrencySymbol(form.currency)} 0,00`}
                                     decimalScale={2}
                                     fixedDecimalScale
-                                    placeholder="R$ 0,00"
                                     className={inputClass}
                                 />
                             </div>

@@ -2,22 +2,36 @@ import { useState } from 'react'
 import CategoryIcon from './CategoryIcon'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
+import { useSettingsContext } from '../contexts/SettingsContext'
 
 const GOAL_ICONS = [
     'Target', 'Home', 'Plane', 'Car', 'Smartphone', 'Laptop',
     'GraduationCap', 'Heart', 'Umbrella', 'PawPrint', 'DollarSign', 'Gamepad2',
 ]
 
-const COLORS = ['#0de238', '#11e3d5', '#e53e07', '#8902e2', '#2a34ff', '#e4d019', '#e61476', '#c30000',]
+const COLORS = ['#0de238', '#11e3d5', '#e53e07', '#8902e2', '#2a34ff', '#e4d019', '#e61476', '#c30000']
+
+const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
+
+const CURRENCIES = [
+    { value: 'BRL', label: 'R$ Real (BRL)' },
+    { value: 'USD', label: 'US$ Dólar (USD)' },
+    { value: 'EUR', label: '€ Euro (EUR)' },
+    { value: 'GBP', label: '£ Libra (GBP)' },
+    { value: 'ARS', label: '$ Peso (ARS)' },
+]
 
 export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
     const { accounts } = useAccounts()
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
     const isEditing = !!goal
 
     const [form, setForm] = useState({
         name: goal?.name ?? '',
         targetAmount: goal?.targetAmount ?? '',
         currentAmount: goal?.currentAmount ?? 0,
+        currency: goal?.currency ?? defaultCurrency,
         deadline: goal?.deadline
             ? (goal.deadline.toDate?.() ?? new Date(goal.deadline)).toISOString().split('T')[0]
             : '',
@@ -25,6 +39,8 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
         color: goal?.color ?? '#0de238',
         icon: goal?.icon ?? 'Target',
     })
+
+    const currencySymbol = CURRENCY_SYMBOLS[form.currency] ?? form.currency
 
     function handleChange(field, value) {
         setForm(prev => ({ ...prev, [field]: value }))
@@ -37,6 +53,7 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
             name: form.name.trim(),
             targetAmount: parseFloat(form.targetAmount),
             currentAmount: parseFloat(form.currentAmount) || 0,
+            currency: form.currency,
             deadline: form.deadline
                 ? (() => { const [y, m, d] = form.deadline.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0) })()
                 : null,
@@ -97,6 +114,19 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
                         />
                     </div>
 
+                    <div className="flex flex-col gap-1.5">
+                        <label className={labelClass}>Moeda</label>
+                        <select
+                            value={form.currency}
+                            onChange={e => handleChange('currency', e.target.value)}
+                            className={inputClass}
+                        >
+                            {CURRENCIES.map(c => (
+                                <option key={c.value} value={c.value}>{c.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
                             <label className={labelClass}>Valor alvo</label>
@@ -105,10 +135,10 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
                                 onValueChange={values => handleChange('targetAmount', values.floatValue ?? '')}
                                 thousandSeparator="."
                                 decimalSeparator=","
-                                prefix="R$ "
+                                prefix={`${currencySymbol} `}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                placeholder="R$ 0,00"
+                                placeholder={`${currencySymbol} 0,00`}
                                 className={inputClass}
                             />
                         </div>
@@ -131,10 +161,10 @@ export default function GoalForm({ goal, onClose, onAdd, onUpdate }) {
                                 onValueChange={values => handleChange('currentAmount', values.floatValue ?? 0)}
                                 thousandSeparator="."
                                 decimalSeparator=","
-                                prefix="R$ "
+                                prefix={`${currencySymbol} `}
                                 decimalScale={2}
                                 fixedDecimalScale
-                                placeholder="R$ 0,00"
+                                placeholder={`${currencySymbol} 0,00`}
                                 className={inputClass}
                             />
                         </div>

@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { NumericFormat } from 'react-number-format'
 import { useCategories } from '../hooks/useCategories'
+import { useSettingsContext } from '../contexts/SettingsContext'
+
+const CURRENCY_SYMBOLS = { BRL: 'R$', USD: 'US$', EUR: '€', GBP: '£', ARS: '$' }
 
 export default function BudgetForm({ budget, onClose, onAdd, onUpdate, existingCategoryIds }) {
     const { categories } = useCategories()
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+    const currencySymbol = CURRENCY_SYMBOLS[defaultCurrency] ?? defaultCurrency
     const isEditing = !!budget
 
     const [form, setForm] = useState({
@@ -60,7 +66,7 @@ export default function BudgetForm({ budget, onClose, onAdd, onUpdate, existingC
                         >
                             <option value="">Selecione...</option>
                             {availableCategories.map(c => (
-                                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                                <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
                     </div>
@@ -72,10 +78,10 @@ export default function BudgetForm({ budget, onClose, onAdd, onUpdate, existingC
                             onValueChange={values => handleChange('amount', values.floatValue ?? '')}
                             thousandSeparator="."
                             decimalSeparator=","
-                            prefix="R$ "
+                            prefix={`${currencySymbol} `}
                             decimalScale={2}
                             fixedDecimalScale
-                            placeholder="R$ 0,00"
+                            placeholder={`${currencySymbol} 0,00`}
                             className={inputClass}
                         />
                     </div>
