@@ -4,9 +4,10 @@ import Button from '../components/Button'
 import { useBudgets } from '../hooks/useBudgets'
 import BudgetForm from '../components/BudgetForm'
 import ConfirmModal from '../components/ConfirmModal'
+import CategoryIcon from '../components/CategoryIcon'
 import { useCategories } from '../hooks/useCategories'
 import { useTransactions } from '../hooks/useTransactions'
-import CategoryIcon from '../components/CategoryIcon'
+import { useSettingsContext } from '../contexts/SettingsContext'
 
 export default function Budget() {
     const now = new Date()
@@ -17,6 +18,8 @@ export default function Budget() {
     const [showForm, setShowForm] = useState(false)
     const [editing, setEditing] = useState(null)
     const [confirming, setConfirming] = useState(null)
+    const { settings } = useSettingsContext()
+    const defaultCurrency = settings.defaultCurrency ?? 'BRL'
 
     const { budgets, loading, addBudget, updateBudget, deleteBudget, copyFromPreviousMonth } = useBudgets(selectedMonth)
     const { transactions } = useTransactions()
@@ -42,7 +45,7 @@ export default function Budget() {
     }
 
     function fmt(value) {
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: defaultCurrency }).format(value)
     }
 
     const budgetsWithSpent = useMemo(() => {
@@ -156,69 +159,66 @@ export default function Budget() {
                         {budgetsWithSpent.map(budget => (
                             <div
                                 key={budget.id}
-                                className={`bg-white dark:bg-gray-800 border rounded-2xl px-4 md:px-5 py-4 ${budget.isOver ? 'border-red-200 dark:border-red-800' : 'border-gray-100 dark:border-gray-700'
+                                className={`bg-white dark:bg-gray-800 border rounded-2xl px-4 md:px-5 py-4 flex flex-col gap-3 ${budget.isOver ? 'border-red-200 dark:border-red-800' : 'border-gray-100 dark:border-gray-700'
                                     }`}
                             >
-                                <div className="flex items-start justify-between mb-3 gap-3">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        {budget.category && (
-                                            <div
-                                                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                                                style={{ backgroundColor: budget.category.color + '22' }}
-                                            >
-                                                <CategoryIcon name={budget.category.icon} size={16} />
-                                            </div>
-                                        )}
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-                                                {budget.category?.name ?? '—'}
-                                            </p>
-                                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                                                {fmt(budget.spent)} de {fmt(budget.amount)}
-                                                {budget.repeat && ' · Repete todo mês'}
-                                            </p>
+                                <div className="flex items-center gap-3">
+                                    {budget.category && (
+                                        <div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                                            style={{ backgroundColor: budget.category.color + '22' }}
+                                        >
+                                            <CategoryIcon name={budget.category.icon} size={16} />
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                        <p className={`text-sm font-medium hidden sm:block ${budget.isOver ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
-                                            {budget.isOver
-                                                ? `+${fmt(budget.spent - budget.amount)}`
-                                                : `${fmt(budget.amount - budget.spent)} restante`
-                                            }
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                                            {budget.category?.name ?? '—'}
                                         </p>
-                                        <button
-                                            onClick={() => handleEdit(budget)}
-                                            className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            onClick={() => setConfirming(budget)}
-                                            className="text-xs text-red-400 hover:text-red-600 transition"
-                                        >
-                                            Excluir
-                                        </button>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                                            {fmt(budget.spent)} de {fmt(budget.amount)}
+                                            {budget.repeat && ' · Repete todo mês'}
+                                        </p>
                                     </div>
+                                    <p className={`text-sm font-medium flex-shrink-0 hidden sm:block ${budget.isOver ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        {budget.isOver
+                                            ? `+${fmt(budget.spent - budget.amount)}`
+                                            : `${fmt(budget.amount - budget.spent)} restante`
+                                        }
+                                    </p>
                                 </div>
 
                                 <div className="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all ${budget.isOver ? 'bg-red-500' :
-                                                budget.percentage >= 80 ? 'bg-amber-400' :
-                                                    'bg-green-500'
+                                            budget.percentage >= 80 ? 'bg-amber-400' :
+                                                'bg-green-500'
                                             }`}
                                         style={{ width: `${budget.percentage}%` }}
                                     />
                                 </div>
-                                <div className="flex justify-between mt-1">
-                                    <span className="text-xs text-gray-400 dark:text-gray-500">0%</span>
+                                <div className="flex justify-end mt-1">
                                     <span className={`text-xs font-medium ${budget.isOver ? 'text-red-500' :
-                                            budget.percentage >= 80 ? 'text-amber-500' :
-                                                'text-gray-400 dark:text-gray-500'
+                                        budget.percentage >= 80 ? 'text-amber-500' :
+                                            'text-gray-400 dark:text-gray-500'
                                         }`}>
                                         {Math.round(budget.percentage)}%
                                     </span>
+                                </div>
+
+                                <div className="flex gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                    <button
+                                        onClick={() => handleEdit(budget)}
+                                        className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                                    >
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirming(budget)}
+                                        className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+                                    >
+                                        Excluir
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -246,8 +246,8 @@ export default function Budget() {
                                             key={i}
                                             onClick={() => { setSelectedMonth(monthValue); setShowMonthPicker(false) }}
                                             className={`py-2 rounded-xl text-sm capitalize transition ${isSelected
-                                                    ? 'bg-gray-900 dark:bg-gray-600 text-white'
-                                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                                ? 'bg-gray-900 dark:bg-gray-600 text-white'
+                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                 }`}
                                         >
                                             {label}

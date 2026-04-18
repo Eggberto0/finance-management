@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import CategoryIcon from './CategoryIcon'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { CATEGORY_TYPES, CATEGORY_ICONS, ACCOUNT_COLORS } from '../utils/constants'
 
 export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
     const isEditing = !!category
+    const { withSpinner } = useSpinner()
 
     const [form, setForm] = useState({
         name: category?.name ?? '',
@@ -17,19 +19,21 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
     }
 
     async function handleSubmit() {
-        if (!form.name.trim()) return
-        const data = {
-            name: form.name.trim(),
-            type: form.type,
-            color: form.color,
-            icon: form.icon,
-        }
-        if (isEditing) {
-            await onUpdate(category.id, data)
-        } else {
-            await onAdd(data)
-        }
-        onClose()
+        await withSpinner(async () => {
+            if (!form.name.trim()) return
+            const data = {
+                name: form.name.trim(),
+                type: form.type,
+                color: form.color,
+                icon: form.icon,
+            }
+            if (isEditing) {
+                await onUpdate(category.id, data)
+            } else {
+                await onAdd(data)
+            }
+            onClose()
+        })
     }
 
     const inputClass = "border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-gray-400 dark:focus:border-gray-500 transition"
@@ -77,8 +81,8 @@ export default function CategoryForm({ category, onClose, onAdd, onUpdate }) {
                                     key={icon}
                                     onClick={() => handleChange('icon', icon)}
                                     className={`w-9 h-9 rounded-xl flex items-center justify-center transition ${form.icon === icon
-                                            ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
-                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                        ? 'bg-gray-900 dark:bg-gray-600 text-white ring-2 ring-offset-2 ring-gray-900 dark:ring-gray-400'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                         }`}
                                 >
                                     <CategoryIcon name={icon} size={16} />

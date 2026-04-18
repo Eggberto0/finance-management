@@ -32,7 +32,7 @@ export default function Categories() {
 
     function CategoryCard({ category }) {
         return (
-            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4 flex items-center justify-between gap-3">
+            <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4 flex flex-col gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                     <div
                         className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -45,16 +45,16 @@ export default function Categories() {
                         <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{getTypeLabel(category.type)}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex gap-2 pt-2 border-t border-gray-50 dark:border-gray-700">
                     <button
                         onClick={() => handleEdit(category)}
-                        className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
                     >
                         Editar
                     </button>
                     <button
                         onClick={() => setConfirming(category)}
-                        className="text-xs text-red-400 hover:text-red-600 transition"
+                        className="flex-1 text-xs text-center py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
                     >
                         Excluir
                     </button>

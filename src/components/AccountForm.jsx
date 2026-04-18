@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAccounts } from '../hooks/useAccounts'
 import { NumericFormat } from 'react-number-format'
+import { useSpinner } from '../contexts/SpinnerContext'
 import { useSettingsContext } from '../contexts/SettingsContext'
 import { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLORS } from '../utils/constants'
 
@@ -9,6 +10,7 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
     const { accounts } = useAccounts()
     const isEditing = !!account
     const availableTypes = ACCOUNT_TYPES.filter(t => !excludeTypes.includes(t.value))
+    const { withSpinner } = useSpinner()
 
     const [form, setForm] = useState({
         name: account?.name ?? '',
@@ -38,31 +40,33 @@ export default function AccountForm({ account, onClose, onAdd, onUpdate, exclude
     }
 
     async function handleSubmit() {
-        if (!form.name.trim()) return
+        await withSpinner(async () => {
+            if (!form.name.trim()) return
 
-        const data = {
-            name: form.name.trim(),
-            type: form.type,
-            currency: form.currency,
-            color: form.color,
-            ...(form.type === 'credit' && {
-                creditLimit: parseFloat(form.creditLimit) || 0,
-                closingDay: parseInt(form.closingDay) || 1,
-                dueDay: parseInt(form.dueDay) || 1,
-                linkedAccountId: form.linkedAccountId || null,
-            }),
-            ...(form.type !== 'credit' && {
-                initialBalance: parseFloat(form.initialBalance) || 0
-            })
-        }
+            const data = {
+                name: form.name.trim(),
+                type: form.type,
+                currency: form.currency,
+                color: form.color,
+                ...(form.type === 'credit' && {
+                    creditLimit: parseFloat(form.creditLimit) || 0,
+                    closingDay: parseInt(form.closingDay) || 1,
+                    dueDay: parseInt(form.dueDay) || 1,
+                    linkedAccountId: form.linkedAccountId || null,
+                }),
+                ...(form.type !== 'credit' && {
+                    initialBalance: parseFloat(form.initialBalance) || 0
+                })
+            }
 
-        if (isEditing) {
-            await onUpdate(account.id, data)
-        } else {
-            await onAdd(data)
-        }
+            if (isEditing) {
+                await onUpdate(account.id, data)
+            } else {
+                await onAdd(data)
+            }
 
-        onClose()
+            onClose()
+        })
     }
 
     const isCredit = form.type === 'credit'
