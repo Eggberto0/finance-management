@@ -1,27 +1,44 @@
-import { useState, useEffect } from 'react'
 import { db } from '../services/firebase'
+import { useState, useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import { useSpinner } from '../contexts/SpinnerContext'
 import {
     collection, addDoc, updateDoc, deleteDoc,
     doc, onSnapshot, query, orderBy, getDocs, where, deleteField
 } from 'firebase/firestore'
-import { useAuth } from '../contexts/AuthContext'
 
 export function useTransactions() {
     const { user } = useAuth()
     const [transactions, setTransactions] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const { withSpinner } = useSpinner()
+    const { addToast } = useToast()
 
     useEffect(() => {
         if (!user) return
+
+        // Timeout de 10s — se não carregar, mostra vazio
+        const timeout = setTimeout(() => {
+            setLoading(false)
+            setError('offline')
+            addToast('Falha ao carregar lançamentos. Verifique sua conexão.')
+        }, 10000)
 
         const q = query(
             collection(db, 'users', user.uid, 'transactions'),
             orderBy('date', 'desc')
         )
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        let firstSnapshot = true
+
+        const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
+            clearTimeout(timeout)
+
+            const isFromCache = snapshot.metadata.fromCache
+            const hasPendingWrites = snapshot.metadata.hasPendingWrites
+
             const today = new Date()
             today.setHours(0, 0, 0, 0)
 
@@ -47,9 +64,31 @@ export function useTransactions() {
 
             setTransactions(data)
             setLoading(false)
+
+            // Ignora o primeiro snapshot de cache — é o carregamento normal
+            if (firstSnapshot && isFromCache) {
+                firstSnapshot = false
+                return
+            }
+            firstSnapshot = false
+
+            if (isFromCache && !hasPendingWrites) {
+                setError('offline')
+                addToast('Sem conexão — exibindo dados em cache', 'error', 8000)
+            } else {
+                setError(null)
+            }
+        }, (err) => {
+            clearTimeout(timeout)
+            addToast('Falha ao carregar lançamentos')
+            setError('offline')
+            setLoading(false)
         })
 
-        return unsubscribe
+        return () => {
+            clearTimeout(timeout)
+            unsubscribe()
+        }
     }, [user])
 
     async function deleteInstallments(installmentId) {
@@ -99,6 +138,7 @@ export function useTransactions() {
     return {
         transactions,
         loading,
+        error,
         addTransaction,
         updateTransaction,
         deleteTransaction,

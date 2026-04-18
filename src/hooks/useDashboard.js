@@ -11,7 +11,7 @@ import { buildInvoicePreview } from '../utils/creditCardInvoice'
 
 export function useDashboard(selectedMonth, period = 'month') {
     const { accounts } = useAccounts()
-    const { transactions } = useTransactions()
+    const { transactions, loading, error } = useTransactions()
     const { categories } = useCategories()
     const [year, month] = selectedMonth.split('-').map(Number)
     const { convert, rates, lastUpdated } = useExchangeRates()
@@ -248,5 +248,7 @@ export function useDashboard(selectedMonth, period = 'month') {
         goalsSummary,
         prevTotalExpense,
         expenseByCategotyPrev,
+        loading,
+        error,
     }
 }

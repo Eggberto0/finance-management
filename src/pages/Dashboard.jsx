@@ -6,6 +6,7 @@ import CategoryIcon from '../components/CategoryIcon'
 import InvoicePreview from '../components/InvoicePreview'
 import PercentageView from '../components/PercentageView'
 import { calcAccountBalance } from '../utils/calcBalance'
+import { SkeletonDashboard } from '../components/Skeleton'
 import { useExchangeRates } from '../hooks/useExchangeRates'
 import { useSettingsContext } from '../contexts/SettingsContext'
 import { useGenerateBudgets } from '../hooks/useGenerateBudgets'
@@ -28,6 +29,8 @@ export default function Dashboard() {
     useGenerateInstances()
     useGenerateBudgets()
     const { user } = useAuth()
+    const { settings } = useSettingsContext()
+    const { convert } = useExchangeRates()
 
     const now = new Date()
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -42,18 +45,10 @@ export default function Dashboard() {
         totalIncome, totalExpense, expenseByCategory, upcomingTransactions,
         creditCardAlerts, budgetAlerts, overdueTransactions, invoicePreview,
         lastUpdated, goalsSummary, prevTotalExpense, expenseByCategotyPrev,
+        loading, error,
     } = useDashboard(selectedMonth, period)
 
-    const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
 
-    const { convert } = useExchangeRates()
-
-    function formatDate(date) {
-        const d = date?.toDate?.() ?? new Date(date?.seconds * 1000)
-        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-    }
-
-    const { settings } = useSettingsContext()
     const defaultCurrency = settings.defaultCurrency ?? 'BRL'
 
     function fmt(value, currency) {
@@ -61,6 +56,11 @@ export default function Dashboard() {
             style: 'currency',
             currency: currency ?? defaultCurrency
         }).format(value)
+    }
+
+    function formatDate(date) {
+        const d = date?.toDate?.() ?? new Date(date?.seconds * 1000)
+        return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
     }
 
     function getDaysUntil(date) {
@@ -71,46 +71,46 @@ export default function Dashboard() {
         return Math.ceil((d - today) / (1000 * 60 * 60 * 24))
     }
 
+    if (loading) return (
+        <Layout>
+            <div className="w-full px-4 md:px-18 py-6 md:py-8">
+                <SkeletonDashboard />
+            </div>
+        </Layout>
+    )
+
+    if (error === 'offline') return (
+        <Layout>
+            <div className="w-full px-4 md:px-18 py-6 md:py-8 flex flex-col items-center justify-center gap-4 py-20">
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Sem conexão com a internet.</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="text-xs px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition"
+                >
+                    Tentar novamente
+                </button>
+            </div>
+        </Layout>
+    )
+
+    const maxCategoryAmount = expenseByCategory[0]?.amount ?? 1
+
     return (
         <Layout>
             <div className="w-full px-4 md:px-18 py-6 md:py-8 flex flex-col gap-4 md:gap-6">
-
-                {/* Header do dashboard */}
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <p className="text-gray-500 dark:text-gray-400 text-sm">
                         Olá, {user.displayName?.split(' ')[0]}! Aqui está seu resumo financeiro.
                     </p>
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
-                            <button
-                                onClick={() => setViewMode('general')}
-                                className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'general'
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
-                            >
-                                Geral
-                            </button>
-                            <button
-                                onClick={() => setViewMode('percentage')}
-                                className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'percentage'
-                                    ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
-                            >
-                                Percentual
-                            </button>
+                            <button onClick={() => setViewMode('general')} className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'general' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Geral</button>
+                            <button onClick={() => setViewMode('percentage')} className={`text-xs px-3 py-1.5 rounded-lg transition ${viewMode === 'percentage' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>Percentual</button>
                         </div>
                         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 p-1 rounded-xl">
                             {PERIOD_OPTIONS.map(p => (
-                                <button
-                                    key={p.value}
-                                    onClick={() => setPeriod(p.value)}
-                                    className={`text-xs px-2 md:px-3 py-1.5 rounded-lg transition ${period === p.value
-                                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                        }`}
-                                >
+                                <button key={p.value} onClick={() => setPeriod(p.value)}
+                                    className={`text-xs px-2 md:px-3 py-1.5 rounded-lg transition ${period === p.value ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
                                     {p.label}
                                 </button>
                             ))}
@@ -118,7 +118,6 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Cards de resumo — 2 colunas no mobile, 4 no desktop */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="rounded-2xl px-4 md:px-5 py-4" style={{ backgroundColor: 'var(--accent)' }}>
                         <p className="text-xs mb-2" style={{ color: 'var(--accent-light)' }}>Patrimônio total</p>
@@ -133,16 +132,12 @@ export default function Dashboard() {
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Receitas</p>
                         <p className="text-xl md:text-2xl font-medium text-green-600">{fmt(totalIncome)}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            {period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}
-                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}</p>
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Despesas</p>
                         <p className="text-xl md:text-2xl font-medium text-red-500">{fmt(totalExpense)}</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            {period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}
-                        </p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{period === 'month' ? 'confirmadas no mês' : `últimos ${periodMonths} meses`}</p>
                     </div>
                     <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-4">
                         <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">Balanço</p>
@@ -173,21 +168,13 @@ export default function Dashboard() {
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Alertas de orçamento</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                     {budgetAlerts.map(budget => (
-                                        <div
-                                            key={budget.id}
-                                            className={`rounded-xl px-4 py-3 ${budget.isOver ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20'}`}
-                                        >
+                                        <div key={budget.id} className={`rounded-xl px-4 py-3 ${budget.isOver ? 'bg-red-50 dark:bg-red-900/20' : 'bg-amber-50 dark:bg-amber-900/20'}`}>
                                             <div className="flex items-center gap-2 mb-2">
                                                 <CategoryIcon name={budget.category?.icon} size={14} />
-                                                <span className={`text-xs font-medium ${budget.isOver ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>
-                                                    {budget.category?.name}
-                                                </span>
+                                                <span className={`text-xs font-medium ${budget.isOver ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'}`}>{budget.category?.name}</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-white dark:bg-gray-700 rounded-full overflow-hidden mb-1">
-                                                <div
-                                                    className={`h-full rounded-full ${budget.isOver ? 'bg-red-500' : 'bg-amber-400'}`}
-                                                    style={{ width: `${Math.min(budget.percentage, 100)}%` }}
-                                                />
+                                                <div className={`h-full rounded-full ${budget.isOver ? 'bg-red-500' : 'bg-amber-400'}`} style={{ width: `${Math.min(budget.percentage, 100)}%` }} />
                                             </div>
                                             <p className={`text-xs ${budget.isOver ? 'text-red-500 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
                                                 {Math.round(budget.percentage)}% usado
@@ -202,10 +189,7 @@ export default function Dashboard() {
                         {overdueTransactions.length > 0 && (
                             <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-red-700 dark:text-red-400">
-                                    {overdueTransactions.length === 1
-                                        ? '1 lançamento em atraso'
-                                        : `${overdueTransactions.length} lançamentos em atraso`
-                                    }
+                                    {overdueTransactions.length === 1 ? '1 lançamento em atraso' : `${overdueTransactions.length} lançamentos em atraso`}
                                 </p>
                                 <div className="flex flex-col gap-1">
                                     {overdueTransactions.map(t => {
@@ -242,18 +226,10 @@ export default function Dashboard() {
                                                 <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{goal.name}</span>
                                             </div>
                                             <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full rounded-full transition-all"
-                                                    style={{
-                                                        width: `${goal.percentage}%`,
-                                                        backgroundColor: goal.isComplete ? '#1D9E75' : goal.color
-                                                    }}
-                                                />
+                                                <div className="h-full rounded-full transition-all" style={{ width: `${goal.percentage}%`, backgroundColor: goal.isComplete ? '#1D9E75' : goal.color }} />
                                             </div>
                                             <p className="text-xs text-gray-400 dark:text-gray-500">
-                                                {Math.round(goal.percentage)}% · {new Intl.NumberFormat('pt-BR', {
-                                                    style: 'currency', currency: goal.currency ?? 'BRL'
-                                                }).format(goal.current)}
+                                                {Math.round(goal.percentage)}% · {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: goal.currency ?? 'BRL' }).format(goal.current)}
                                             </p>
                                         </div>
                                     ))}
@@ -261,7 +237,6 @@ export default function Dashboard() {
                             </div>
                         )}
 
-                        {/* Grid principal — coluna única no mobile, 3 colunas no desktop */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-4">
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Contas</p>
