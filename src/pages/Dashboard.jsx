@@ -45,7 +45,7 @@ export default function Dashboard() {
         totalIncome, totalExpense, expenseByCategory, upcomingTransactions,
         creditCardAlerts, budgetAlerts, overdueTransactions, invoicePreview,
         lastUpdated, goalsSummary, prevTotalExpense, expenseByCategotyPrev,
-        loading, error,
+        loading, error, debtsSummary,
     } = useDashboard(selectedMonth, period)
 
 
@@ -231,6 +231,25 @@ export default function Dashboard() {
                                             <p className="text-xs text-gray-400 dark:text-gray-500">
                                                 {Math.round(goal.percentage)}% · {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: goal.currency ?? 'BRL' }).format(goal.current)}
                                             </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {debtsSummary.total > 0 && (
+                            <div className="bg-white dark:bg-gray-800 border border-red-100 dark:border-red-800 rounded-2xl px-4 md:px-5 py-5 flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Dívidas ativas</p>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">{debtsSummary.total} dívida{debtsSummary.total !== 1 ? 's' : ''}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {Object.entries(debtsSummary.byCurrency).map(([currency, total]) => (
+                                        <div key={currency} className="flex flex-col">
+                                            <p className="text-lg font-medium text-red-500">
+                                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(total)}
+                                            </p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">em {currency}</p>
                                         </div>
                                     ))}
                                 </div>

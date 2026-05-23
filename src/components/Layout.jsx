@@ -1,13 +1,14 @@
+import { TrendingDown } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
 import { useAuth } from '../contexts/AuthContext'
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import ConfirmModal from '../components/ConfirmModal'
 import { useOnboarding } from '../hooks/useOnboarding'
+import { useTransactions } from '../hooks/useTransactions'
 import OnboardingModal from '../components/OnboardingModal'
 import TransactionForm from '../components/TransactionForm'
 import { useSettingsContext } from '../contexts/SettingsContext'
-import { useTransactions } from '../hooks/useTransactions'
 import {
     LayoutDashboard, CreditCard, Wallet, ArrowLeftRight,
     RefreshCw, PiggyBank, Calculator, Tag, BookOpen, LogOut, Trash2, Menu, X, Plus
@@ -20,6 +21,7 @@ const navItems = [
     { to: '/transactions', label: 'Lançamentos', icon: ArrowLeftRight },
     { to: '/recurring', label: 'Recorrentes', icon: RefreshCw },
     { to: '/goals', label: 'Cofrinhos', icon: PiggyBank },
+    { to: '/debts', label: 'Dívidas', icon: TrendingDown },
     { to: '/budget', label: 'Orçamento', icon: Calculator },
     { to: '/categories', label: 'Categorias', icon: Tag },
 ]

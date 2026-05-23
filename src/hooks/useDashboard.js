@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useDebts } from './useDebts'
 import { useGoals } from './useGoals'
 import { useBudgets } from './useBudgets'
 import { useAccounts } from './useAccounts'
@@ -18,6 +19,7 @@ export function useDashboard(selectedMonth, period = 'month') {
     const { budgets } = useBudgets(`${year}-${String(month).padStart(2, '0')}`)
     const { settings } = useSettingsContext()
     const defaultCurrency = settings.defaultCurrency ?? 'BRL'
+    const { debts } = useDebts()
 
     const periodMonths = period === 'quarter' ? 3 : period === 'half' ? 6 : period === 'year' ? 12 : 1
 
@@ -54,6 +56,15 @@ export function useDashboard(selectedMonth, period = 'month') {
             .reduce((sum, t) => sum + t.amount, 0),
         [prevConfirmed]
     )
+
+    const debtsSummary = useMemo(() => {
+        const activeDebts = debts.filter(d => d.currentBalance > 0)
+        const byCurrency = activeDebts.reduce((acc, d) => {
+            acc[d.currency] = (acc[d.currency] ?? 0) + d.currentBalance
+            return acc
+        }, {})
+        return { activeDebts, byCurrency, total: activeDebts.length }
+    }, [debts])
 
     const expenseByCategotyPrev = useMemo(() => {
         const map = {}
@@ -250,5 +261,6 @@ export function useDashboard(selectedMonth, period = 'month') {
         expenseByCategotyPrev,
         loading,
         error,
+        debtsSummary,
     }
 }
