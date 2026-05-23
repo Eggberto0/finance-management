@@ -5,10 +5,12 @@ import { Link, useLocation } from 'react-router-dom'
 import ConfirmModal from '../components/ConfirmModal'
 import { useOnboarding } from '../hooks/useOnboarding'
 import OnboardingModal from '../components/OnboardingModal'
+import TransactionForm from '../components/TransactionForm'
 import { useSettingsContext } from '../contexts/SettingsContext'
+import { useTransactions } from '../hooks/useTransactions'
 import {
     LayoutDashboard, CreditCard, Wallet, ArrowLeftRight,
-    RefreshCw, PiggyBank, Calculator, Tag, BookOpen, LogOut, Trash2, Menu, X
+    RefreshCw, PiggyBank, Calculator, Tag, BookOpen, LogOut, Trash2, Menu, X, Plus
 } from 'lucide-react'
 
 const navItems = [
@@ -22,7 +24,6 @@ const navItems = [
     { to: '/categories', label: 'Categorias', icon: Tag },
 ]
 
-// Itens que aparecem na barra inferior do mobile (os mais usados)
 const mobileNavItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/transactions', label: 'Lançamentos', icon: ArrowLeftRight },
@@ -44,10 +45,7 @@ function FinancerLogo() {
                     <path d="M11 5l-6 6" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeOpacity="0.6" />
                 </svg>
             </div>
-            <span
-                className="text-base font-semibold tracking-tight text-gray-100"
-                style={{ letterSpacing: '-0.3px' }}
-            >
+            <span className="text-base font-semibold tracking-tight text-gray-100" style={{ letterSpacing: '-0.3px' }}>
                 Financer
             </span>
         </div>
@@ -56,7 +54,9 @@ function FinancerLogo() {
 
 export default function Layout({ children }) {
     const { user, logout, deleteAccount } = useAuth()
+    const { addTransaction } = useTransactions()
     const [confirmDelete, setConfirmDelete] = useState(false)
+    const [showQuickForm, setShowQuickForm] = useState(false)
     const { theme, toggleTheme, accent, changeAccent, ACCENT_COLORS } = useTheme()
     const { showOnboarding, completeOnboarding, restartOnboarding } = useOnboarding()
     const location = useLocation()
@@ -75,7 +75,6 @@ export default function Layout({ children }) {
         return () => document.removeEventListener('mousedown', handleClick)
     }, [])
 
-    // Fecha o menu mobile ao navegar
     useEffect(() => {
         setMobileMenuOpen(false)
     }, [location.pathname])
@@ -91,7 +90,6 @@ export default function Layout({ children }) {
                 <FinancerLogo />
 
                 <div className="flex items-center gap-3">
-                    {/* Botão menu mobile (hamburguer) */}
                     <button
                         className="md:hidden text-white opacity-80 hover:opacity-100 transition"
                         onClick={() => setMobileMenuOpen(o => !o)}
@@ -99,12 +97,8 @@ export default function Layout({ children }) {
                         {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
 
-                    {/* Avatar + dropdown — sempre visível */}
                     <div className="relative" ref={menuRef}>
-                        <button
-                            onClick={() => setMenuOpen(o => !o)}
-                            className="flex items-center gap-2 text-sm transition"
-                        >
+                        <button onClick={() => setMenuOpen(o => !o)} className="flex items-center gap-2 text-sm transition">
                             <div
                                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
                                 style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
@@ -188,7 +182,6 @@ export default function Layout({ children }) {
                                         <LogOut size={14} className="text-gray-400" />
                                         Sair
                                     </button>
-
                                     <button
                                         onClick={() => { setConfirmDelete(true); setMenuOpen(false) }}
                                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition flex items-center gap-3"
@@ -203,7 +196,7 @@ export default function Layout({ children }) {
                 </div>
             </header>
 
-            {/* Nav desktop — oculto no mobile */}
+            {/* Nav desktop */}
             <nav className="hidden md:block w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-8">
                 <div className="flex gap-6">
                     {navItems.map(item => {
@@ -213,10 +206,7 @@ export default function Layout({ children }) {
                             <Link
                                 key={item.to}
                                 to={item.to}
-                                className={`flex items-center gap-1.5 text-sm py-3 border-b-2 transition ${isActive
-                                    ? 'border-b-2 font-medium'
-                                    : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'
-                                    }`}
+                                className={`flex items-center gap-1.5 text-sm py-3 border-b-2 transition ${isActive ? 'border-b-2 font-medium' : 'text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 dark:hover:text-gray-300'}`}
                                 style={isActive ? { color: 'var(--accent)', borderBottomColor: 'var(--accent)' } : {}}
                             >
                                 <Icon size={14} />
@@ -227,13 +217,10 @@ export default function Layout({ children }) {
                 </div>
             </nav>
 
-            {/* Menu mobile expandido (hamburguer) */}
+            {/* Menu mobile expandido */}
             {mobileMenuOpen && (
                 <div className="md:hidden fixed inset-0 z-30 pt-14" onClick={() => setMobileMenuOpen(false)}>
-                    <div
-                        className="w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 py-2"
-                        onClick={e => e.stopPropagation()}
-                    >
+                    <div className="w-full bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 py-2" onClick={e => e.stopPropagation()}>
                         {navItems.map(item => {
                             const Icon = item.icon
                             const isActive = location.pathname === item.to
@@ -241,10 +228,7 @@ export default function Layout({ children }) {
                                 <Link
                                     key={item.to}
                                     to={item.to}
-                                    className={`flex items-center gap-3 px-6 py-3 text-sm transition ${isActive
-                                        ? 'font-medium'
-                                        : 'text-gray-500 dark:text-gray-400'
-                                        }`}
+                                    className={`flex items-center gap-3 px-6 py-3 text-sm transition ${isActive ? 'font-medium' : 'text-gray-500 dark:text-gray-400'}`}
                                     style={isActive ? { color: 'var(--accent)' } : {}}
                                 >
                                     <Icon size={16} />
@@ -261,6 +245,20 @@ export default function Layout({ children }) {
                 {children}
             </main>
 
+            {/* Botão flutuante de lançamento rápido */}
+            <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-40 group">
+                <button
+                    onClick={() => setShowQuickForm(true)}
+                    className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
+                    style={{ backgroundColor: 'var(--accent)' }}
+                >
+                    <Plus size={24} color="white" />
+                </button>
+                <span className="absolute right-16 top-1/2 -translate-y-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs px-3 py-1.5 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    Novo lançamento
+                </span>
+            </div>
+
             {/* Barra de navegação inferior mobile */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
                 <div className="flex">
@@ -271,8 +269,7 @@ export default function Layout({ children }) {
                             <Link
                                 key={item.to}
                                 to={item.to}
-                                className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition ${isActive ? 'font-medium' : 'text-gray-400 dark:text-gray-500'
-                                    }`}
+                                className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition ${isActive ? 'font-medium' : 'text-gray-400 dark:text-gray-500'}`}
                                 style={isActive ? { color: 'var(--accent)' } : {}}
                             >
                                 <Icon size={20} />
@@ -283,9 +280,17 @@ export default function Layout({ children }) {
                 </div>
             </nav>
 
-            {showOnboarding && (
-                <OnboardingModal onComplete={completeOnboarding} />
+            {/* Modal de lançamento rápido */}
+            {showQuickForm && (
+                <TransactionForm
+                    transaction={null}
+                    onClose={() => setShowQuickForm(false)}
+                    onAdd={addTransaction}
+                    onUpdate={() => { }}
+                />
             )}
+
+            {showOnboarding && <OnboardingModal onComplete={completeOnboarding} />}
 
             {confirmDelete && (
                 <ConfirmModal
